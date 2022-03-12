@@ -11,8 +11,11 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+
     return MaterialApp(
       title: 'Flutter Demo',
+      home: Scaffold(appBar: AppBar(title: const Text('welcome to Flutter'),),
+      body: const Center(child: RandomWords(),),),
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -25,7 +28,7 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      
     );
   }
 }
@@ -112,5 +115,44 @@ class _MyHomePageState extends State<MyHomePage> {
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+}
+
+class RandomWords extends StatefulWidget {
+  const RandomWords({ Key? key }) : super(key: key);
+
+  //Normally the name of state class contains _ in the front
+  @override
+  State<RandomWords> createState() => _RandomWordsState();
+}
+
+//State<RandomWords> is the universal class State class: to maintain the RandomWords widget status
+class _RandomWordsState extends State<RandomWords> {
+  final _suggestions = <WordPair>[];
+  final _biggerFont = const TextStyle(fontSize: 18.0);
+
+  @override
+  Widget build(BuildContext context) {
+    final wordPair = WordPair.random();
+
+    body: ListView.builder(
+      padding: const EdgeInsets.all(16.0),
+      itemBuilder: /*1*/ (context, i) {
+        if (i.isOdd) return const Divider(); /*2*/
+
+        final index = i ~/ 2; /*3*/
+        if (index >= _suggestions.length) {
+          _suggestions.addAll(generateWordPairs().take(10)); /*4*/
+        }
+        return ListTile(
+          title: Text(
+            _suggestions[index].asPascalCase,
+            style: _biggerFont,
+          ),
+        );
+      },
+    );
+
+    return Text(wordPair.asPascalCase);
   }
 }
