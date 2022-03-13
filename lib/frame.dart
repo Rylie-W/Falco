@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'components/animate_widget.dart';
+import 'components/bottomTopScreen.dart';
 
 class Frame extends StatelessWidget {
   bool b = false;
@@ -12,7 +13,16 @@ class Frame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: new Stack(
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.lightBlueAccent,
+        child: Icon(Icons.add),
+        onPressed: () {
+          showModalBottomSheet(
+              context: context,
+              builder: (BuildContext context) => BottomTopScreen());
+        },
+      ),
+      body: new Stack(
           children: <Widget>[
             new Container(
               decoration: new BoxDecoration(
