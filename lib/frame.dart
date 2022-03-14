@@ -1,13 +1,28 @@
 import 'package:flutter/material.dart';
 import 'components/animate_widget.dart';
 import 'components/bottomTopScreen.dart';
+import 'package:image_picker/image_picker.dart';
 
-class Frame extends StatelessWidget {
+class Frame extends StatefulWidget {
+  @override
+  _FrameState createState() => _FrameState();
+}
+
+class _FrameState extends State<Frame> {
   bool b = false;
   //anime list
   final List<String> list = [
     'assets/images/fatchicken.png',
   ];
+  XFile? image;
+  // XFile? image = await picker.pickImage(source: ImageSource.camera);
+  Future pickImage() async {
+    final image =  await ImagePicker().pickImage(source: ImageSource.camera);
+    if(image  == null) return;
+    final imageTemp = XFile(image.path);
+    setState(() => this.image = imageTemp);
+  }
+
 
   final GlobalKey<FrameAnimationImageState> _key = new GlobalKey<FrameAnimationImageState>();
   @override
@@ -18,8 +33,10 @@ class Frame extends StatelessWidget {
         child: Icon(Icons.add),
         onPressed: () {
           showModalBottomSheet(
+              isScrollControlled: true,
               context: context,
               builder: (BuildContext context) => BottomTopScreen());
+          // pickImage();
         },
       ),
       body: new Stack(
