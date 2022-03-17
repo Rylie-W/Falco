@@ -44,7 +44,7 @@ class _FrameState extends State<Frame> {
                   // pickImage();
               }, 
               icon: Icon(Icons.home)),
-            SizedBox(),
+            //SizedBox(),
             IconButton(onPressed:() {
               
             },icon: Icon(Icons.business)),

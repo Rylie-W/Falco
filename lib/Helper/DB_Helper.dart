@@ -11,25 +11,25 @@ class DBHelper{
 
   DBHelper.internal();
 
-  late Database _db;
+  static Database? _db  ;
 
   //Avoid errors cause by flutter upgrade.
-  //WidgetsFlutterBinding.ensureInitialized();
 
-   Future<Database> get db async{
+
+  Future<Database> get db async{
     if(_db != null){
-      return _db;
+      return _db!;
     }else{
-      _db = await initDb();
-      return _db;
+      _db ??= await initDb();
+      return _db!;
     }
   }
 
-  Future<Database> initDb()async{
+  Future<Database> initDb() async{
     final databasePath = await getDatabasesPath();
     final path = join(databasePath, "dbhelper.db");
 
-  return await openDatabase(path,version: 1,onCreate: (Database db,int newerVersion)async{
+  return openDatabase(path,version: 1,onCreate: (Database db,int newerVersion) async{
       await db.execute('CREATE TABLE users(name TEXT PRIMARY KEY, positive INTEGER, negative INTEGER, primarystate TEXT, secondarystate TEXT, secondaryevent TEXT, thirdstate TEXT, state TEXT, species TEXT, childrennum INTEGER, fatherstate TEXT, motherstate TEXT, time INTEGER)', );
       await db.execute('CREATE TABLE foods(id INTEGER PRIMARY KEY, name TEXT, category TEXT, boughttime INTEGER, expiretime INTEGER, quantitytype TEXT, quantitynum INTEGER, state TEXT, consumestate REAL)');  
     });
@@ -192,7 +192,7 @@ class DBHelper{
   }
 
       //Define method that retrieves all the foods from food table
-  Future<List<String>> getAllFoodValues(String value) async {
+  Future<List<String>> getAllFoodStringValues(String value) async {
     //Get a reference to the database.
     Database dbHelper = await db; 
     //Query table for all the foods.
@@ -201,6 +201,20 @@ class DBHelper{
 
     //Convert the List<Map<String, dynamic> into a List<String>
     var foodsname = List<String>.generate(maps.length, (i) => maps[i][value]);
+
+    return foodsname;
+
+  }
+        //Define method that retrieves all the foods from food table
+  Future<List<int>> getAllFoodIntValues(String value) async {
+    //Get a reference to the database.
+    Database dbHelper = await db; 
+    //Query table for all the foods.
+   
+    final List<Map<String, dynamic>> maps = await dbHelper.query('foods', columns: [value]);
+
+    //Convert the List<Map<String, dynamic> into a List<String>
+    var foodsname = List<int>.generate(maps.length, (i) => maps[i][value]);
 
     return foodsname;
 
@@ -288,48 +302,58 @@ class DBHelper{
     Database dbhelper = await db;
     dbhelper.close();
   }
-}
+
+  
+
   //################Test Database###################
 
-testDB() async{
+  testDB() async{
 
-  DBHelper dbhelper = DBHelper();
+    DBHelper dbhelper = DBHelper();
 
-  //Insert a new Food butter
-  var butter = Food(id: 1, name: 'butter', category: 'MilkProduct', boughttime: 154893, expiretime: 156432, quantitytype: 'pieces', quantitynum: 3, consumestate: 0.50, state: 'good');   
-  dbhelper.insertFood(butter);
-  
-  //Query all Foods
-  print(await dbhelper.queryAll("foods"));
+    //Insert a new Food butter
+    var butter = Food(id: 2, name: 'milk', category: 'MilkProduct', boughttime: 154893, expiretime: 156432, quantitytype: 'pieces', quantitynum: 3, consumestate: 0.50, state: 'good');   
+    var egg = Food(id: 3, name: 'beaf', category: 'Meat', boughttime: 134554, expiretime: 1654757, quantitytype: 'number', quantitynum: 4, consumestate: 0, state: 'good');
+    dbhelper.insertFood(butter);
+    dbhelper.insertFood(egg);
+    
+    //Query all Foods
+    //print(await dbhelper.queryAll("foods"));
 
-  //Query one specific Food
-  print(await dbhelper.queryOne('foods','butter'));
+    //Query one specific Food
+    //print(await dbhelper.queryOne('foods','butter'));
 
-  //Update butter's quantity number and expire time
-  butter = Food(id: butter.id, name: butter.name, category: butter.category, boughttime: butter.boughttime, expiretime: butter.expiretime + 7, quantitytype: butter.quantitytype, quantitynum: butter.quantitynum + 1, consumestate: butter.consumestate, state: butter.state);
-  await dbhelper.updateFood(butter);
-  print(await dbhelper.queryAll("foods"));
+    //Update butter's quantity number and expire time
+    //butter = Food(id: butter.id, name: butter.name, category: butter.category, boughttime: butter.boughttime, expiretime: butter.expiretime + 7, quantitytype: butter.quantitytype, quantitynum: butter.quantitynum + 1, consumestate: butter.consumestate, state: butter.state);
+    //await dbhelper.updateFood(butter);
+   //print(await dbhelper.queryAll("foods"));
 
-  //Delete the Food butter
-  await dbhelper.deleteFood(butter.id);
-  print(await dbhelper.queryAll("foods"));
+    //Delete the Food butter
+    //await dbhelper.deleteFood(butter.id);
+   // print(await dbhelper.queryAll("foods"));
 
-  //Insert a new UserValue instance
-  var user1 = UserValue(name: "user1", negative: 2, positive: 25, primarystate: "nest", secondarystate: "satisfied", secondaryevent: "single", thirdstate: "move", species: "folca", childrennum: 1, fatherstate: "divorced", motherstate: "divorced", time: 1345443);
-  await dbhelper.insertUser(user1);
-  print(await dbhelper.queryAll("users"));
+    //Get all foods name
+    print(await dbhelper.getAllFoodStringValues('name'));
+    print(await dbhelper.getAllFoodIntValues('expiretime'));
+    print(await dbhelper.getOneFoodName(1));
 
-  //Query one specific UserValue
-  print(await dbhelper.queryOne('users', 'user1'));
+    //Insert a new UserValue instance
+    var user1 = UserValue(name: "user1", negative: 2, positive: 25, primarystate: "nest", secondarystate: "satisfied", secondaryevent: "single", thirdstate: "move", species: "folca", childrennum: 1, fatherstate: "divorced", motherstate: "divorced", time: 1345443);
+    await dbhelper.insertUser(user1);
+    print(await dbhelper.queryAll("users"));
 
-  //Update user1's primarystate and....
-  user1 = UserValue(name: 'user1', negative: 6, positive: 25, primarystate: 'mate', secondarystate: "unsuccessful", secondaryevent: "single", thirdstate: "move", species: "folca", childrennum: 1, fatherstate: "divorced", motherstate: "divorced", time: 134654);
-  await dbhelper.updateUser(user1);
-  print(await dbhelper.queryAll('users'));
+    //Query one specific UserValue
+    print(await dbhelper.queryOne('users', 'user1'));
 
-  //Deleter user1
-  await dbhelper.deleteUser('user1');
-  print(await dbhelper.queryAll('users'));
+    //Update user1's primarystate and....
+    user1 = UserValue(name: 'user1', negative: 6, positive: 25, primarystate: 'mate', secondarystate: "unsuccessful", secondaryevent: "single", thirdstate: "move", species: "folca", childrennum: 1, fatherstate: "divorced", motherstate: "divorced", time: 134654);
+    await dbhelper.updateUser(user1);
+    print(await dbhelper.queryAll('users'));
+
+    //Deleter user1
+    await dbhelper.deleteUser('user1');
+    print(await dbhelper.queryAll('users'));
+  }
   
 }
 
