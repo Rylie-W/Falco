@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+
+import '../Pages/InputPage.dart';
 
 class BottomTopScreen extends StatefulWidget {
   @override
@@ -38,8 +39,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                     timeInSecForIosWeb: 1,
                     backgroundColor: Colors.red,
                     textColor: Colors.white,
-                    fontSize: 16.0
-                );
+                    fontSize: 16.0);
               },
               child: const Icon(
                 Icons.favorite,
@@ -56,8 +56,10 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
             child: FloatingActionButton(
               heroTag: 'next',
               onPressed: () {
-                txt.value = new TextEditingValue();
-                pushAddItemScreen();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const InputPage()),
+                );
               },
               child: const Icon(
                 Icons.add,
@@ -104,12 +106,13 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
         textColor: Colors.black54,
         style: ListTileStyle.list,
         dense: true,
-        child: ListView.builder( itemCount:items.length, itemBuilder: (context, index) {
+        child: ListView.builder(
+            itemCount: items.length,
+            itemBuilder: (context, index) {
+              var item = items[index];
 
-          var item = items[index];
-
-          return buildItem(item, index);
-        }));
+              return buildItem(item, index);
+            }));
   }
 
   Widget buildItem(String text, int index) {
