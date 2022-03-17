@@ -30,7 +30,9 @@ class _FrameState extends State<Frame> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
+<<<<<<< HEAD
         floatingActionButton: FloatingActionButton(
           backgroundColor: Colors.lightBlueAccent,
           child: Icon(Icons.add),
@@ -44,6 +46,58 @@ class _FrameState extends State<Frame> {
         ),
 
         body: new Stack(
+=======
+      appBar: AppBar(actions: <Widget> [IconButton(icon: Icon(Icons.share), onPressed: () {}),],),
+      bottomNavigationBar: BottomAppBar(
+        color: Colors.white,
+        shape: CircularNotchedRectangle(),
+        child: Row(
+          children: [
+            IconButton(
+              onPressed: () {
+                showModalBottomSheet(
+                  isScrollControlled: true,
+                  context: context,
+                  builder: (BuildContext context) => BottomTopScreen());
+                  // pickImage();
+              }, 
+              icon: Icon(Icons.home)),
+            //SizedBox(),
+            IconButton(onPressed:() {
+              
+            },icon: Icon(Icons.business)),
+            IconButton(onPressed: (){
+
+            }, icon: Icon(Icons.school))
+          ],
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+        ),
+      ),
+      /*
+      bottomNavigationBar: BottomNavigationBar(
+        items: <BottomNavigationBarItem [
+          BottomNavigationBarItem(icon: Icon(Icons.home), title: Text('Home')),
+          BottomNavigationBarItem(icon: Icon(Icons.business), title: Text('Warehouse')),
+          BottomNavigationBarItem(icon: Icon(Icons.school), title: Text('Achivements')),
+        ],
+        //currentIndex: _,
+        fixedColor: Colors.blue,
+        onTap: ,
+      ),
+      */
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.lightBlueAccent,
+        child: Icon(Icons.add),
+        onPressed: () {
+          showModalBottomSheet(
+              isScrollControlled: true,
+              context: context,
+              builder: (BuildContext context) => BottomTopScreen());
+          // pickImage();
+        },
+      ),
+      body: new Stack(
+>>>>>>> async
           children: <Widget>[
             new Container(
               decoration: new BoxDecoration(
