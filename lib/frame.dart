@@ -3,6 +3,7 @@ import 'components/animate_widget.dart';
 import 'components/bottomTopScreen.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:less_waste/Helper/DB_Helper.dart';
+import 'package:rive/rive.dart';
 import 'dart:convert';
 
 class Frame extends StatefulWidget {
@@ -112,18 +113,7 @@ class _FrameState extends State<Frame> {
               ),
             ),
             new Center(
-              child: GestureDetector(
-                onTap: () {
-                  if (b) {
-                    _key.currentState?.reset();
-                  } else {
-                    _key.currentState?.start();
-                  }
-                  b = !b;
-                },
-                child: FrameAnimationImage(_key, list,
-                    width: 220, height: 200, interval: 50, start: false),
-              ),
+                child: RiveAnimation.asset('assets/anime/normal_bird_male.riv'),
             )
           ],
         ));

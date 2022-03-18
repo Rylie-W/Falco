@@ -37,7 +37,8 @@ dependencies:
   image_picker: ^0.8.3
   # upload picture
   dio: ^4.0.0
-
+  #anime dependence
+  rive: ^0.8.4
 
 
 
@@ -64,6 +65,7 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^1.0.0
 
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
@@ -72,6 +74,7 @@ flutter:
   assets:
     - assets/images/fatchicken.png
     - assets/images/backyard.png
+    - assets/anime/normal_bird_male.riv
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
