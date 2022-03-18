@@ -232,8 +232,49 @@ class DBHelper{
     //var foodname = Food.fromMap(maps.first);
 
     return foodname;
+  }
+  Future<int> getMaxId()async{
+    //Get a reference to the database.
+    Database dbHelper = await db; 
+    //Query table for all the foods.
+   
+    var maxId = await dbHelper.rawQuery('SELECT max(id) fROM foods');
+
+    print('###################################$maxId############################');
+    //Convert the List<Map<String, dynamic> into a String
+    var maxID = maxId[0]['max(id)'];
+
+    if(maxID == null){
+        maxID = -1;
+    }
+
+    return maxID;
 
   }
+
+  Future<List<Food>> queryByCategory(String category) async{
+    //Get the refernce to the database
+    Database dbHelper = await db;
+
+    //final List<Map<String, dynamic>> maps = await dbHelper.query('foods',columns: ['name', 'expiretime', 'boughttime', 'quantitynum', 'quantitytype', 'state', 'consumestate'], where: '$category = ?', whereArgs: [category]);
+    final List<Map<String, dynamic>> maps = await dbHelper.rawQuery('SELECT * FROM foods WHERE category = ?', [category]);
+
+    //Convert the List<Map<String, dynamic> into a List
+
+      return List.generate(maps.length, (i) {
+        return Food(
+          id: maps[i]['id'],
+          name: maps[i]['name'],
+          category: maps[i]['category'],
+          boughttime: maps[i]['boughttime'],
+          expiretime: maps[i]['expiretime'],
+          quantitynum: maps[i]['quantitynum'],
+          quantitytype: maps[i]['quantitytype'],
+          state: maps[i]['state'],
+          consumestate: maps[i]['consumestate'],
+        );
+      });
+  } 
 
 
   //Define method that updates food data 

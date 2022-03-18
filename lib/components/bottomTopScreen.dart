@@ -1,13 +1,11 @@
 import 'dart:ffi';
 
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
 import 'package:fluttertoast/fluttertoast.dart';
 
 import '../Pages/InputPage.dart';
-=======
 import 'package:less_waste/Helper/DB_Helper.dart';
->>>>>>> async
+import 'dart:convert';
 
 class BottomTopScreen extends StatefulWidget {
   @override
@@ -16,7 +14,24 @@ class BottomTopScreen extends StatefulWidget {
 
 class _BottomTopScreenState extends State<BottomTopScreen> {
   TextEditingController nameController = TextEditingController();
-  TextEditingController numController = TextEditingController();
+  TextEditingController expireTimeController = TextEditingController();
+  TextEditingController boughtTimeController = TextEditingController();
+  TextEditingController quanTypeController = TextEditingController();
+  TextEditingController quanNumController = TextEditingController();
+  TextEditingController categoryController = TextEditingController();
+
+  @override
+  void dispose(){
+    //Clean up all controllers when the widget is disposed
+    nameController.dispose();
+    expireTimeController.dispose();
+    boughtTimeController.dispose();
+    quanNumController.dispose();
+    quanTypeController.dispose();
+    categoryController.dispose();
+    super.dispose();
+  }
+  
   //FocusNode focusNode1 = FocusNode();
   //FocusNode focusNode2 = FocusNode();
   //FocusScopeNode? focusScopeNode;
@@ -38,17 +53,25 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
       var egg = Food(id: 1, name: 'eggs', category: 'Meat', boughttime: 134554, expiretime: 1654757, quantitytype: 'number', quantitynum: 4, consumestate: 0, state: 'good');
       await dbhelper.insertFood(egg);
 
-      await dbhelper.testDB();
+      //await dbhelper.testDB();
 
       //print('###################################third##################################');
       //print(await dbhelper.queryAll("foods"));
   }
 
-  Future<void> insertDB() async{
+  Future<void> insertDB(String name, String category, int boughttime, int expiretime, String quantitytype, int quantitynum, String state, double consumestate) async{
+
+    var maxId = await dbhelper.getMaxId();
+    print('##########################MaxID = $maxId###############################');
+    maxId = maxId + 1;
+    var newFood = Food(id: maxId, name: name, category: category, boughttime: boughttime, expiretime: expiretime, quantitytype: quantitytype, quantitynum: quantitynum, consumestate: consumestate, state: state);
+    print(newFood);
+
+    await dbhelper.insertFood(newFood);
+    print(await dbhelper.queryAll('foods'));
 
   }
 
-  
 
   var txt = TextEditingController();
 
@@ -58,63 +81,23 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
       appBar: AppBar(
         title: Text('Item List'),
       ),
+
       body: buildList(),
-      floatingActionButton: Stack(
-        fit: StackFit.expand,
-        children: [
-          Positioned(
-            left: 30,
-            bottom: 20,
-            child: FloatingActionButton(
-              heroTag: 'back',
-              onPressed: () {
-                Fluttertoast.showToast(
-                    msg: "This is Center Short Toast",
-                    toastLength: Toast.LENGTH_SHORT,
-                    gravity: ToastGravity.CENTER,
-                    timeInSecForIosWeb: 1,
-                    backgroundColor: Colors.red,
-                    textColor: Colors.white,
-                    fontSize: 16.0);
-              },
-              child: const Icon(
-                Icons.favorite,
-                size: 40,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 20,
-            right: 30,
-            child: FloatingActionButton(
-              heroTag: 'next',
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const InputPage()),
-                );
-              },
-              child: const Icon(
-                Icons.add,
-                size: 40,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-          ),
-          // Add more floating buttons if you want
-          // There is no limit
-        ],
+
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        tooltip: "Add item",
+        onPressed: () {
+          // clear out txt buffer before entering new screen
+          txt.value = new TextEditingValue();
+          pushAddItemScreen();
+        },
       ),
     );
   }
 
   Future<List<String>> getItemName() async {
-    await insertItem();
+    //await insertItem();
 
     //get all foods name as a list of string
     List<String> items = await dbhelper.getAllFoodStringValues('name');
@@ -123,6 +106,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
 
     return items;
   }
+
 
   Future<List<int>> getItemQuanNum() async{
     //get all foods quantity number as a list of integers
@@ -177,31 +161,6 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   }
 
   Widget buildList() {
-<<<<<<< HEAD
-    if (items.length < 1) {
-      return Center(
-        child: Text(
-          "Nothing yet...",
-          style: TextStyle(
-            fontSize: 20,
-          ),
-        ),
-      );
-    }
-
-    return ListTileTheme(
-        contentPadding: EdgeInsets.all(15),
-        textColor: Colors.black54,
-        style: ListTileStyle.list,
-        dense: true,
-        child: ListView.builder(
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              var item = items[index];
-
-              return buildItem(item, index);
-            }));
-=======
     //items = await getItemName();
     return FutureBuilder(
       future: getItemName(), 
@@ -249,23 +208,17 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
         });
       }
     );   
->>>>>>> async
   }
   
 
   Widget buildItem(String text, int expire, int index) {
     return Card(
-        elevation: 3,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        margin: EdgeInsets.all(10),
+      elevation: 3,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+      margin: EdgeInsets.all(10),
         child: ListTile(
-<<<<<<< HEAD
-            title: Text(
-              text,
-              style: TextStyle(fontSize: 25),
-=======
           title: Text(text, style: TextStyle( fontSize: 25), ),
           subtitle: Text("Expired in $expire days", style: TextStyle(fontStyle: FontStyle.italic),),
           trailing: FittedBox(
@@ -274,63 +227,27 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
               children: <Widget>[
                 IconButton(
                   icon: Icon(Icons.delete),
-                  onPressed: () => {},
+                  onPressed: () {
+                    //delete the correspoding food in database
+                    //and remove it from the ListView
+
+                    
+                  },
                 ),
                 Text("quantity")
               ],
->>>>>>> async
             ),
-            subtitle: Text(
-              "Expired in 2 days",
-              style: TextStyle(fontStyle: FontStyle.italic),
-            ),
-            trailing: FittedBox(
-              fit: BoxFit.fill,
-              child: Column(
-                children: <Widget>[
-                  IconButton(
-                    icon: Icon(Icons.delete),
-                    onPressed: () => {},
-                  ),
-                  Text("asa")
-                ],
-              ),
-            ),
-            onTap: () {
-              txt.value = new TextEditingController.fromValue(
-                      new TextEditingValue(text: items[index]))
-                  .value;
-              pushEditItemScreen(index);
-            }));
+          ),
+          onTap: () {
+            txt.value = new TextEditingController.fromValue(new TextEditingValue(text: items[index])).value;
+            pushEditItemScreen(index);
+          }
+        )
+    );
   }
 
   /// opens add new item screen
   void pushAddItemScreen() {
-<<<<<<< HEAD
-    Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text('Add an item'),
-        ),
-        body: TextField(
-          autofocus: true,
-          decoration: InputDecoration(
-              hintText: 'e.g. Eggs', contentPadding: EdgeInsets.all(16)),
-          controller: txt,
-          onSubmitted: (value) {
-//                    debugPrint(value);
-            // add the item
-            addItem(value);
-
-            // close route
-            // when push is used, it pushes new item on stack of navigator
-            // simply pop off stack and it goes back
-            Navigator.pop(context);
-          },
-        ),
-      );
-    }));
-=======
     Navigator.of(context).push(
         MaterialPageRoute(
             builder: (context) {
@@ -349,17 +266,31 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                       prefixIcon: Icon(Icons.food_bank)
                   ),
                   controller: nameController,
-                  onSubmitted: (value) {
-//                    debugPrint(value);
-                    // add the item
-                    addItemName(value);
-
-                    //insertItem()
-                    // close route
-                    // when push is used, it pushes new item on stack of navigator
-                    // simply pop off stack and it goes back
-                    Navigator.pop(context);
-                  },
+                  onSubmitted: (value) {},
+                ),
+                TextField(
+                  autofocus: true,
+                  //focusNode: focusNode2,
+                  decoration: InputDecoration(
+                      hintText: 'choose correspoding category...',
+                      contentPadding: EdgeInsets.all(16),
+                      labelText: "Category",
+                      prefixIcon: Icon(Icons.food_bank)
+                  ),
+                  controller: categoryController,
+                  obscureText: true
+                ),
+                TextField(
+                  autofocus: true,
+                  //focusNode: focusNode2,
+                  decoration: InputDecoration(
+                      hintText: 'You bought it on...',
+                      contentPadding: EdgeInsets.all(16),
+                      labelText: "Bought Date",
+                      prefixIcon: Icon(Icons.food_bank)
+                  ),
+                  controller: boughtTimeController,
+                  obscureText: true
                 ),
                 TextField(
                   autofocus: true,
@@ -370,21 +301,69 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                       labelText: "Expire On",
                       prefixIcon: Icon(Icons.food_bank)
                   ),
-                  controller: numController,
-                  onSubmitted: (value) {
-//                    debugPrint(value);
-                    // add the item
-                    addItemExpi(value);
-                    // close route
+                  controller: expireTimeController,
+                  obscureText: true
+                ),
+                TextField(
+                  autofocus: true,
+                  //focusNode: focusNode2,
+                  decoration: InputDecoration(
+                      hintText: 'Quantity',
+                      contentPadding: EdgeInsets.all(16),
+                      labelText: "Quantity Number",
+                      prefixIcon: Icon(Icons.food_bank)
+                  ),
+                  controller: quanNumController,
+                  obscureText: true
+                ),
+                TextField(
+                  autofocus: true,
+                  //focusNode: focusNode2,
+                  decoration: InputDecoration(
+                      hintText: 'Quantity',
+                      contentPadding: EdgeInsets.all(16),
+                      labelText: "Quantity Type",
+                      prefixIcon: Icon(Icons.food_bank)
+                  ),
+                  controller: quanTypeController,
+                  obscureText: true
+                ),
+                FloatingActionButton(
+                  //When the user press this button, add user inputs into the database 
+                  //and add to the previous ListView
+                  onPressed:() {
+
+                    //convert string to int
+                    try{
+                      var boughttime = int.parse(boughtTimeController.text);
+                      var quantityNum = int.parse(quanNumController.text);
+                      var expiretime = int.parse(expireTimeController.text);
+
+                      //add item name and expiretime to show in the ListView
+                    //and then
+                    addItemExpi(expiretime);
+                    addItemName(nameController.text);
+
+                    //Calculate the current state of the new food
+                    //well actually i should assume the state of a new food should always be good, unless the user is an idiot
+                    //But i'm going to do the calculation anyway
+                    
+                    //insert new data into database
+                    insertDB(nameController.text, categoryController.text, boughttime, expiretime, quanTypeController.text, quantityNum, 'good', 0.0);
+                    print(dbhelper.queryAll('foods'));
+
+                    } on FormatException{
+                      print('Format Error!');
+                    }
+
+                     // close route
                     // when push is used, it pushes new item on stack of navigator
-                    // simply pop off stack and it goes back
+                     // simply pop off stack and it goes back
                     Navigator.pop(context);
+                    buildList();
                   },
-                  obscureText: true),
-               
-                RaisedButton(
-                  onPressed:() {},
-                  child: Text('Add'),
+                  tooltip: 'Add food',
+                  child: const Icon(Icons.add),
                 ),
                 ],
                 )       
@@ -392,33 +371,39 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
             }
         )
     );
->>>>>>> async
   }
 
   /// opens edit item screen
-  void pushEditItemScreen(index) {
-    Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text('Edit item..'),
-        ),
-        body: TextField(
-          autofocus: true,
-          decoration: InputDecoration(
-              hintText: 'e.g. Eggs', contentPadding: EdgeInsets.all(16)),
-          controller: txt,
-          onSubmitted: (value) {
-            editItem(index, value);
+  void pushEditItemScreen (index) {
+    Navigator.of(context).push(
+        MaterialPageRoute(
+            builder: (context) {
+              return Scaffold(
+                appBar: AppBar(
+                  title: Text('Edit item..'),
+                ),
 
-            Navigator.pop(context);
-          },
-        ),
-      );
-    }));
+                body: TextField(
+                  autofocus: true,
+
+                  decoration: InputDecoration(
+                      hintText: 'e.g. Eggs',
+                      contentPadding: EdgeInsets.all(16)
+                  ),
+
+                  controller: txt,
+
+                  onSubmitted: (value) {
+                    editItem(index, value);
+
+                    Navigator.pop(context);
+                    buildList();
+                  },
+                ),
+              );
+            }
+        )
+    );
   }
-<<<<<<< HEAD
-}
-=======
 
 }
->>>>>>> async
