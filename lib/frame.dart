@@ -93,6 +93,7 @@ class _FrameState extends State<Frame> {
         backgroundColor: Colors.lightBlueAccent,
         child: Icon(Icons.add),
         onPressed: () {
+          insertItem();
           showModalBottomSheet(
               isScrollControlled: true,
               context: context,
