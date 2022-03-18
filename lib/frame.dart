@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:less_waste/Pages/InputPage.dart';
 import 'components/animate_widget.dart';
 import 'components/bottomTopScreen.dart';
 import 'package:image_picker/image_picker.dart';
@@ -68,7 +69,11 @@ class _FrameState extends State<Frame> {
               icon: Icon(Icons.home)),
             //SizedBox(),
             IconButton(onPressed:() {
-
+              insertItem();
+              showModalBottomSheet(
+                  isScrollControlled: true,
+                  context: context,
+                  builder: (BuildContext context) => InputPage());
               
             },icon: Icon(Icons.business)),
             IconButton(onPressed: (){

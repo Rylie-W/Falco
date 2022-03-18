@@ -1,4 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+import '../components/datePicker.dart';
+import '../components/dialog.dart';
 
 // Uncomment lines 7 and 10 to view the visual layout at runtime.
 // import 'package:flutter/rendering.dart' show debugPaintSizeEnabled;
@@ -36,8 +40,8 @@ class InputPage extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _buildButtonColumn2(color, 'No date'),
-            _buildButtonColumn2(color, date),
+            _buildButtonColumn2(context, color, 'No date'),
+            DataPicker(),
           ],
         ),
       ],
@@ -63,8 +67,8 @@ class InputPage extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _buildButtonColumn2(color, 'No date'),
-            _buildButtonColumn2(color, date),
+            _buildButtonColumn2(context, color, 'No date'),
+            _buildButtonColumn2(context, color, date),
           ],
         )
       ],
@@ -125,9 +129,16 @@ class InputPage extends StatelessWidget {
                     side: BorderSide(color: Colors.white)))));
   }
 
-  ElevatedButton _buildButtonColumn2(Color color, String lable) {
+  ElevatedButton _buildButtonColumn2(
+      BuildContext context, Color color, String lable) {
     return ElevatedButton.icon(
-        onPressed: () {},
+        onPressed: () => showDialog<String>(
+              context: context,
+              builder: (BuildContext context) => AlertDialog(
+                title: Text('Category List'),
+                content: BodyWidget(),
+              ),
+            ),
         icon: Icon(Icons.calendar_today, size: 18),
         label: Text(lable),
         style: ButtonStyle(
