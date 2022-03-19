@@ -7,6 +7,8 @@ import 'package:less_waste/Helper/DB_Helper.dart';
 import 'package:rive/rive.dart';
 import 'dart:convert';
 
+import 'components/quantityDialog.dart';
+
 class Frame extends StatefulWidget {
   @override
   _FrameState createState() => _FrameState();
@@ -14,20 +16,39 @@ class Frame extends StatefulWidget {
 
 class _FrameState extends State<Frame> {
   bool b = false;
+
   //Create Databse Object
   DBHelper dbhelper = DBHelper();
-  
-  Future<void> insertItem() async{
-       //Insert a new Food butter
-      var butter = Food(id: 0, name: 'butter', category: 'MilkProduct', boughttime: 154893, expiretime: 156432, quantitytype: 'pieces', quantitynum: 3, consumestate: 0.50, state: 'good'); 
-      await dbhelper.insertFood(butter);
-      var egg = Food(id: 1, name: 'eggs', category: 'Meat', boughttime: 134554, expiretime: 1654757, quantitytype: 'number', quantitynum: 4, consumestate: 0, state: 'good');
-      await dbhelper.insertFood(egg);
 
-      //await dbhelper.testDB();
+  Future<void> insertItem() async {
+    //Insert a new Food butter
+    var butter = Food(
+        id: 0,
+        name: 'butter',
+        category: 'MilkProduct',
+        boughttime: 154893,
+        expiretime: 156432,
+        quantitytype: 'pieces',
+        quantitynum: 3,
+        consumestate: 0.50,
+        state: 'good');
+    await dbhelper.insertFood(butter);
+    var egg = Food(
+        id: 1,
+        name: 'eggs',
+        category: 'Meat',
+        boughttime: 134554,
+        expiretime: 1654757,
+        quantitytype: 'number',
+        quantitynum: 4,
+        consumestate: 0,
+        state: 'good');
+    await dbhelper.insertFood(egg);
 
-      //print('###################################third##################################');
-      //print(await dbhelper.queryAll("foods"));
+    //await dbhelper.testDB();
+
+    //print('###################################third##################################');
+    //print(await dbhelper.queryAll("foods"));
   }
 
   //anime list
@@ -49,41 +70,43 @@ class _FrameState extends State<Frame> {
 
   @override
   Widget build(BuildContext context) {
-
-        return Scaffold(
-      appBar: AppBar(actions: <Widget> [IconButton(icon: Icon(Icons.share), onPressed: () {}),],),
-      bottomNavigationBar: BottomAppBar(
-        color: Colors.white,
-        shape: CircularNotchedRectangle(),
-        child: Row(
-          children: [
-            IconButton(
-              onPressed: () {
-                insertItem();
-                showModalBottomSheet(
-                  isScrollControlled: true,
-                  context: context,
-                  builder: (BuildContext context) => BottomTopScreen());
-                  // pickImage();
-              }, 
-              icon: Icon(Icons.home)),
-            //SizedBox(),
-            IconButton(onPressed:() {
-              insertItem();
-              showModalBottomSheet(
-                  isScrollControlled: true,
-                  context: context,
-                  builder: (BuildContext context) => InputPage());
-              
-            },icon: Icon(Icons.business)),
-            IconButton(onPressed: (){
-
-            }, icon: Icon(Icons.school))
+    return Scaffold(
+        appBar: AppBar(
+          actions: <Widget>[
+            IconButton(icon: Icon(Icons.share), onPressed: () {}),
           ],
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
         ),
-      ),
-      /*
+        bottomNavigationBar: BottomAppBar(
+          color: Colors.white,
+          shape: CircularNotchedRectangle(),
+          child: Row(
+            children: [
+              IconButton(
+                  onPressed: () {
+                    insertItem();
+                    showModalBottomSheet(
+                        isScrollControlled: true,
+                        context: context,
+                        builder: (BuildContext context) => BottomTopScreen());
+                    // pickImage();
+                  },
+                  icon: Icon(Icons.home)),
+              //SizedBox(),
+              IconButton(
+                  onPressed: () {
+                    insertItem();
+                    showModalBottomSheet(
+                        isScrollControlled: true,
+                        context: context,
+                        builder: (BuildContext context) => InputPage());
+                  },
+                  icon: Icon(Icons.business)),
+              IconButton(onPressed: () {}, icon: Icon(Icons.school))
+            ],
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+          ),
+        ),
+        /*
       bottomNavigationBar: BottomNavigationBar(
         items: <BottomNavigationBarItem [
           BottomNavigationBarItem(icon: Icon(Icons.home), title: Text('Home')),
@@ -95,19 +118,18 @@ class _FrameState extends State<Frame> {
         onTap: ,
       ),
       */
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.lightBlueAccent,
-        child: Icon(Icons.add),
-        onPressed: () {
-          insertItem();
-          showModalBottomSheet(
-              isScrollControlled: true,
-              context: context,
-              builder: (BuildContext context) => BottomTopScreen());
-          // pickImage();
-        },
-      ),
-
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.lightBlueAccent,
+          child: Icon(Icons.add),
+          onPressed: () {
+            insertItem();
+            showModalBottomSheet(
+                isScrollControlled: true,
+                context: context,
+                builder: (BuildContext context) => BottomTopScreen());
+            // pickImage();
+          },
+        ),
         body: new Stack(
           children: <Widget>[
             new Container(
@@ -119,7 +141,7 @@ class _FrameState extends State<Frame> {
               ),
             ),
             new Center(
-                child: RiveAnimation.asset('assets/anime/normal_bird_male.riv'),
+              child: RiveAnimation.asset('assets/anime/normal_bird_male.riv'),
             )
           ],
         ));
