@@ -119,7 +119,9 @@ class InputPage extends StatelessWidget {
 
   ElevatedButton _buildButtonColumn1(Color color, int value) {
     return ElevatedButton.icon(
-        onPressed: () {},
+        onPressed: () {
+          
+        },
         icon: Icon(Icons.calendar_today, size: 18),
         label: Text("+ ${value} days"),
         style: ButtonStyle(
