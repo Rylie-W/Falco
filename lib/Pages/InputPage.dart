@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../components/datePicker.dart';
-import '../components/dialog.dart';
+import '../components/quantityDialog.dart';
 
 // Uncomment lines 7 and 10 to view the visual layout at runtime.
 // import 'package:flutter/rendering.dart' show debugPaintSizeEnabled;
@@ -130,7 +130,7 @@ class InputPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(18.0),
                     side: BorderSide(color: Colors.white)))));
   }
-
+// quantity number
   ElevatedButton _buildButtonColumn2(
       BuildContext context, Color color, String lable) {
     return ElevatedButton.icon(
@@ -138,7 +138,7 @@ class InputPage extends StatelessWidget {
               context: context,
               builder: (BuildContext context) => AlertDialog(
                 title: Text('Category List'),
-                content: BodyWidget(),
+                content: QuantityNumber(),
               ),
             ),
         icon: Icon(Icons.calendar_today, size: 18),
