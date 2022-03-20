@@ -75,6 +75,11 @@ flutter:
     - assets/images/fatchicken.png
     - assets/images/backyard.png
     - assets/anime/normal_bird_male.riv
+    - assets/achievements/first_encounter.png
+    - assets/achievements/nesting.png
+    - assets/achievements/newborn.png
+    - assets/achievements/courtship.png
+    - assets/achievements/new_coming.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
