@@ -7,6 +7,8 @@ import '../Pages/InputPage.dart';
 import 'package:less_waste/Helper/DB_Helper.dart';
 import 'dart:convert';
 
+import 'package:less_waste/components/itemDetailPage.dart';
+
 class BottomTopScreen extends StatefulWidget {
   @override
   _BottomTopScreenState createState() => _BottomTopScreenState();
@@ -75,28 +77,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   }
 
 
-  var txt = TextEditingController();
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Item List'),
-      ),
-
-      body: buildList(),
-
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        tooltip: "Add item",
-        onPressed: () {
-          // clear out txt buffer before entering new screen
-          txt.value = new TextEditingValue();
-          pushAddItemScreen();
-        },
-      ),
-    );
-  }
 
   Future<List<String>> getItemName() async {
     //await insertItem();
@@ -143,7 +124,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
     });
   }
 
-    Future<void> addItemExpi(value) async {
+  Future<void> addItemExpi(value) async {
 
     List<int> expires = await dbhelper.getAllUncosumedFoodIntValues('expiretime');
     print(expires);
@@ -161,18 +142,43 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
       items[index] = value;
     });
   }
-  Future<void> updateFoodState(int id,String name) async{
-     var consumedFood = await dbhelper.queryOne('foods', name);
-     print(consumedFood);
-     var consumedFoodUpdate = Food(id: id, name: name, category: consumedFood[0].category, boughttime: timeNow, expiretime: consumedFood[0].expiretime, quantitytype: consumedFood[0].quantitytype, quantitynum: 0, consumestate: 1.0, state: 'consumed');
 
-      dbhelper.updateFood(consumedFoodUpdate);
+  Future<void> deleteItem(index) async{
+      //items = await getItemName();
+      dbhelper.deleteFood(index);
+
+  }
+  
+
+  Future<void> updateFoodState(int id, String name, String attribute) async{
+     var updatedFood = await dbhelper.queryOne('foods', name);
+     print(updatedFood);
+     if(attribute == 'consumed'){
+     //var consumedFoodUpdate = Food(id: id, name: name, category: updatedFood[0].category, boughttime: updatedFood[0].boughttime, expiretime: updatedFood[0].expiretime, quantitytype: updatedFood[0].quantitytype, quantitynum: 0, consumestate: 1.0, state: 'consumed');
+      dbhelper.updateFoodConsumed(id);
+     }
+     else{
+      //var wastedFoodUpdate = Food(id: id, name: name, category: updatedFood[0].category, boughttime: updatedFood[0].boughttime, expiretime: updatedFood[0].expiretime, quantitytype: updatedFood[0].quantitytype, quantitynum: updatedFood[0].quantitynum, consumestate: 1.0, state: 'wasted');
+      dbhelper.updateFoodWaste(id);
+    
+     }
+  }
+
+  //when to call this function? At a certain time evey day.
+  Future<void> autocheckWaste() async{
+    //get every instance out of Foods table and compare its expiretime with current time
+    int maxID = await dbhelper.getMaxId();
+    for(int i = 0; i <= maxID ; i++ ){
+      var expiretime = await dbhelper.getAllUncosumedFoodIntValues('expiretime');
+      if(expiretime[i] < timeNow){
+        dbhelper.updateFoodWaste(i);   
+      }
+    }
   }
 
   //check the primary state of uservalue should be updated or not; if so, update to the latest
   Future<void> updatePrimaryState() async{
     var user1 = await dbhelper.queryAll('users');
-    print("#############################$user1###############################");
     int value = user1[0].positive - user1[0].negative;
 
     if(value > 0 && value <= 6){
@@ -192,7 +198,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
       await dbhelper.updateUserPrimary('learn');
     }
     else if(value > 40 && value <= 50){
-       dbhelper.updateUserPrimary('leavehomw'); 
+       dbhelper.updateUserPrimary('leavehome'); 
     }
   }
 
@@ -218,6 +224,47 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
       await updatePrimaryState();
     }
 
+  }
+
+  var txt = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Item List'),
+      ),
+
+      body: Column(
+        children: [
+          TextButton.icon(
+            onPressed: (){
+
+            }, 
+            icon: RotatedBox(
+              quarterTurns: 1,
+              child: Icon(Icons.compare_arrows, size: 28,)
+            ), 
+            label: Text(
+              'Expire Remaining Time Ascending',
+              style: TextStyle(fontSize: 6),
+            ),
+          ),
+        
+        Expanded(child: buildList()),
+        ],
+      ),
+    
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        tooltip: "Add item",
+        onPressed: () {
+          // clear out txt buffer before entering new screen
+          txt.value = new TextEditingValue();
+          pushAddItemScreen();
+        },
+      ),
+    );
   }
 
   Widget buildList() {
@@ -257,11 +304,14 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                   itemCount: items.length,
                   itemBuilder: (context, index) {
                     var item = items[index];
-                    //how to show the quantity tyoe and quantity number?
+                    //how to show the quantity type and quantity number?
 
                     //var expires = getItemExpireingTime();
                     var expire = expires[index];
                     //how to show the listsby sequence of expire time?
+                    final sortedItems = expires.reversed.toList();
+                    expire = sortedItems[index];
+
                     return buildItem(item, expire, index);   
                   }
               )
@@ -282,34 +332,126 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
         child: ListTile(
           title: Text(text, style: TextStyle( fontSize: 25), ),
           subtitle: Text("Expired in $expire days", style: TextStyle(fontStyle: FontStyle.italic),),
+
           trailing: FittedBox(
             fit: BoxFit.fill,
             child: Column( 
               children: <Widget>[
-                IconButton(
-                  icon: Icon(Icons.delete),
-                  onPressed: () {
-                    //User click to mean consume the correspoding food in database
-                    //remove it from the ListView ------------> how?????????
-                    //edit the state to 'consumed' and consumestate to 1, and user positive data adds 1
-                   print('##################################$text#############$index######################');
-                   updateFoodState(index, text);
-                   updateUserValue('positive');
-                   buildList();
-
-                  },
+                Row (
+                  children: <Widget>[
+                    IconButton(
+                      icon: Icon(Icons.delete),
+                      onPressed: () {
+                        //User click to mean he has wasted the correspoding food in database
+                        //remove it from the ListView ------------> how?????????
+                        //edit the state to 'wasted' and consumestate stays the same, and user negative data adds 1
+                      print('##################################$text#############$index######################');
+                      updateFoodState(index, text, 'wasted');
+                      updateUserValue('negative');
+                      buildList();
+                      },
+                    ),
+                    Text('wasted'),
+                  ],
                 ),
-                Text("consumed")
+                Row(
+                  children: <Widget>[
+                
+                    IconButton(
+                      icon: Icon(Icons.backpack),
+                      onPressed: () {
+                        //User click to mean consume the correspoding food in database
+                        //remove it from the ListView ------------> how?????????
+                        //edit the state to 'consumed' and consumestate to 1, and user positive data adds 1
+                      print('##################################$text#############$index######################');
+                      updateFoodState(index, text, 'consumed');
+                      updateUserValue('positive');
+                      buildList();
+                      },
+                    ),
+                    Text("consumed")
+                  ],
+                ),
               ],
             ),
           ),
           onTap: () {
             //edit one specific card ---------直接跳去詳情頁面吧
-            txt.value = new TextEditingController.fromValue(new TextEditingValue(text: items[index])).value;
-            pushEditItemScreen(index);
-          }
+            //txt.value = new TextEditingController.fromValue(new TextEditingValue(text: items[index])).value;
+            //transport the index or name of the tapped food card to itemDetailPage
+            
+            //builder: (BuildContext index) => itemDetailPage();
+            pushItemDetailScreen(index, text);
+          },
+          onLongPress: () {
+            //長按卡片刪除
+            deleteItem(index);                   
+            buildList();
+          },
         )
     );
+  }
+
+  void pushItemDetailScreen(int index, String text) async{
+    String quantype = await dbhelper.getOneFoodValue(index, 'quantitytype');
+    int quannum = await dbhelper.getOneFoodIntValue(index, 'quantitynum');
+    int expitime = await dbhelper.getOneFoodIntValue(index, 'expiretime');
+    String category = await dbhelper.getOneFoodValue(index, 'category');
+    double consumeprogress = await dbhelper.getOneFoodDoubleValue(index, 'consumestate');
+
+     Navigator.push(context, MaterialPageRoute<void>(
+              builder: (BuildContext context) {
+                return Scaffold(
+                  appBar: AppBar(title: Text('Detail Page')),
+                  
+                  body: Column(
+                    children: <Widget>[
+                      TextButton(
+                        child: Text('Edit'),
+                        onPressed: () {
+                          //var qnum = dbhelper.getOneFoodValue(index, "quantitynum");
+                          Navigator.pop(context);
+                        },
+                      ),
+                      //name
+                      //quantity number and quantity type
+                      Title( color: Colors.blue , 
+                        title: text,
+                        child: Column( 
+                          children: <Widget>[
+                            Row(
+                              children: <Widget> [            
+                                Text('Storage Now:$quannum $quantype'),
+                                //Text(quantype),                      
+                              ],                        
+                            ), 
+                            Row(
+                              children: <Widget> [
+                                Text('Category: $category')
+                              ]
+                            ),
+                            Row(
+                              children: <Widget> [
+                                Text('Expires in: $expitime')
+                              ]
+                            ),
+                          ],
+                        ),
+                      //progress bar of cosume state            
+                      ),
+                      SizedBox(
+                        height: 5,
+                        child: LinearProgressIndicator(
+                          backgroundColor: Colors.grey[200],
+                          valueColor: AlwaysStoppedAnimation(Colors.blue),
+                          value: consumeprogress,
+                        ),
+                      ),
+                    ]
+                  ),
+                );
+              },
+            ));
   }
 
   /// opens add new item screen

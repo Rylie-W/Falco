@@ -43,6 +43,7 @@ class _DataPickerState extends State<DataPicker> {
                 if (value != null && value != selectedDate)
                   setState(() {
                     selectedDate = value;
+                    //
                   });
               },
               initialDateTime: DateTime.now(),
