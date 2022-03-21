@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:less_waste/Pages/InputPage.dart';
+import 'package:less_waste/components/achievements.dart';
 import 'components/animate_widget.dart';
 import 'components/bottomTopScreen.dart';
 import 'package:image_picker/image_picker.dart';
@@ -19,8 +20,11 @@ class _FrameState extends State<Frame> {
 
   //Create Databse Object
   DBHelper dbhelper = DBHelper();
+<<<<<<< HEAD
   DateTime selectedDate = DateTime.now();
   int timeNow = DateTime.now().millisecondsSinceEpoch;
+=======
+>>>>>>> 813f98cbe716d784ea2f6fc8575d50e0be7302ad
 
   Future<void> insertItem() async {
     //Insert a new Food butter
@@ -107,7 +111,15 @@ class _FrameState extends State<Frame> {
                         builder: (BuildContext context) => InputPage());
                   },
                   icon: Icon(Icons.business)),
-              IconButton(onPressed: () {}, icon: Icon(Icons.school))
+              IconButton(
+                  onPressed: () {
+                    insertItem();
+                    showModalBottomSheet(
+                        isScrollControlled: true,
+                        context: context,
+                        builder: (BuildContext context) => Achievements());
+                  },
+                  icon: Icon(Icons.school)),
             ],
             mainAxisAlignment: MainAxisAlignment.spaceAround,
           ),
