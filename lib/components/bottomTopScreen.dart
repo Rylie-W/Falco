@@ -9,6 +9,7 @@ import 'package:less_waste/Helper/DB_Helper.dart';
 import 'dart:convert';
 import 'datePicker.dart';
 
+
 class BottomTopScreen extends StatefulWidget {
   @override
   _BottomTopScreenState createState() => _BottomTopScreenState();
@@ -45,7 +46,6 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   DateTime dateToday = new DateTime.now();
   int timeNow = DateTime.now().millisecondsSinceEpoch;
 
-
   //Create Databse Object
   DBHelper dbhelper = DBHelper();
 
@@ -78,28 +78,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   }
 
 
-  var txt = TextEditingController();
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Item List'),
-      ),
-
-      body: buildList(),
-
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        tooltip: "Add item",
-        onPressed: () {
-          // clear out txt buffer before entering new screen
-          txt.value = new TextEditingValue();
-          pushAddItemScreen();
-        },
-      ),
-    );
-  }
 
   Future<List<String>> getItemName() async {
     //await insertItem();
@@ -164,18 +143,43 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
       items[index] = value;
     });
   }
-  Future<void> updateFoodState(int id,String name) async{
-     var consumedFood = await dbhelper.queryOne('foods', name);
-     print(consumedFood);
-     var consumedFoodUpdate = Food(id: id, name: name, category: consumedFood[0].category, boughttime: timeNow, expiretime: consumedFood[0].expiretime, quantitytype: consumedFood[0].quantitytype, quantitynum: 0, consumestate: 1.0, state: 'consumed');
 
-      dbhelper.updateFood(consumedFoodUpdate);
+  Future<void> deleteItem(index) async{
+      //items = await getItemName();
+      dbhelper.deleteFood(index);
+
+  }
+
+
+  Future<void> updateFoodState(int id, String name, String attribute) async{
+     var updatedFood = await dbhelper.queryOne('foods', name);
+     print(updatedFood);
+     if(attribute == 'consumed'){
+     //var consumedFoodUpdate = Food(id: id, name: name, category: updatedFood[0].category, boughttime: updatedFood[0].boughttime, expiretime: updatedFood[0].expiretime, quantitytype: updatedFood[0].quantitytype, quantitynum: 0, consumestate: 1.0, state: 'consumed');
+      dbhelper.updateFoodConsumed(id);
+     }
+     else{
+      //var wastedFoodUpdate = Food(id: id, name: name, category: updatedFood[0].category, boughttime: updatedFood[0].boughttime, expiretime: updatedFood[0].expiretime, quantitytype: updatedFood[0].quantitytype, quantitynum: updatedFood[0].quantitynum, consumestate: 1.0, state: 'wasted');
+      dbhelper.updateFoodWaste(id);
+
+     }
+  }
+
+  //when to call this function? At a certain time evey day.
+  Future<void> autocheckWaste() async{
+    //get every instance out of Foods table and compare its expiretime with current time
+    int maxID = await dbhelper.getMaxId();
+    for(int i = 0; i <= maxID ; i++ ){
+      var expiretime = await dbhelper.getAllUncosumedFoodIntValues('expiretime');
+      if(expiretime[i] < timeNow){
+        dbhelper.updateFoodWaste(i);
+      }
+    }
   }
 
   //check the primary state of uservalue should be updated or not; if so, update to the latest
   Future<void> updatePrimaryState() async{
     var user1 = await dbhelper.queryAll('users');
-    print("#############################$user1###############################");
     int value = user1[0].positive - user1[0].negative;
 
     if(value > 0 && value <= 6){
@@ -195,7 +199,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
       await dbhelper.updateUserPrimary('learn');
     }
     else if(value > 40 && value <= 50){
-       dbhelper.updateUserPrimary('leavehomw'); 
+       dbhelper.updateUserPrimary('leavehome');
     }
   }
 
@@ -221,6 +225,47 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
       await updatePrimaryState();
     }
 
+  }
+
+  var txt = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Item List'),
+      ),
+
+      body: Column(
+        children: [
+          TextButton.icon(
+            onPressed: (){
+
+            },
+            icon: RotatedBox(
+              quarterTurns: 1,
+              child: Icon(Icons.compare_arrows, size: 28,)
+            ),
+            label: Text(
+              'Expire Remaining Time Ascending',
+              style: TextStyle(fontSize: 6),
+            ),
+          ),
+
+        Expanded(child: buildList()),
+        ],
+      ),
+
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        tooltip: "Add item",
+        onPressed: () {
+          // clear out txt buffer before entering new screen
+          txt.value = new TextEditingValue();
+          pushAddItemScreen();
+        },
+      ),
+    );
   }
 
   Widget buildList() {
@@ -265,7 +310,10 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                     //var expires = getItemExpireingTime();
                     var expire = expires[index];
                     //how to show the listsby sequence of expire time?
-                    return buildItem(item, expire, index);   
+                    final sortedItems = expires.reversed.toList();
+                    expire = sortedItems[index];
+
+                    return buildItem(item, expire, index);
                   }
               )
           );
@@ -289,32 +337,122 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
             fit: BoxFit.fill,
             child: Column( 
               children: <Widget>[
-                IconButton(
-                  icon: Icon(Icons.delete),
-                  onPressed: () {
-                    //User click to mean consume the correspoding food in database
-                    //remove it from the ListView ------------> how?????????
-                    //edit the state to 'consumed' and consumestate to 1, and user positive data adds 1
-                   print('##################################$text#############$index######################');
-                   updateFoodState(index, text);
-                   updateUserValue('positive');
-                   buildList();
-
-                  },
+                Row (
+                  children: <Widget>[
+                    IconButton(
+                      icon: Icon(Icons.delete),
+                      onPressed: () {
+                        //User click to mean he has wasted the correspoding food in database
+                        //remove it from the ListView ------------> how?????????
+                        //edit the state to 'wasted' and consumestate stays the same, and user negative data adds 1
+                      print('##################################$text#############$index######################');
+                      updateFoodState(index, text, 'wasted');
+                      updateUserValue('negative');
+                      buildList();
+                      },
+                    ),
+                    Text('wasted'),
+                  ],
                 ),
-                Text("consumed")
+                Row(
+                  children: <Widget>[
+
+                    IconButton(
+                      icon: Icon(Icons.backpack),
+                      onPressed: () {
+                        //User click to mean consume the correspoding food in database
+                        //remove it from the ListView ------------> how?????????
+                        //edit the state to 'consumed' and consumestate to 1, and user positive data adds 1
+                      print('##################################$text#############$index######################');
+                      updateFoodState(index, text, 'consumed');
+                      updateUserValue('positive');
+                      buildList();
+                      },
+                    ),
+                    Text("consumed")
+                  ],
+                ),
               ],
             ),
           ),
           onTap: () {
             //edit one specific card ---------直接跳去詳情頁面吧
-            txt.value = new TextEditingController.fromValue(new TextEditingValue(text: items[index])).value;
-            pushEditItemScreen(index);
-          }
+            //txt.value = new TextEditingController.fromValue(new TextEditingValue(text: items[index])).value;
+            //transport the index or name of the tapped food card to itemDetailPage
+
+            //builder: (BuildContext index) => itemDetailPage();
+            pushItemDetailScreen(index, text);
+          },
+          onLongPress: () {
+            //長按卡片刪除
+            deleteItem(index);
+            buildList();
+          },
         )
     );
   }
 
+  void pushItemDetailScreen(int index, String text) async{
+    String quantype = await dbhelper.getOneFoodValue(index, 'quantitytype');
+    int quannum = await dbhelper.getOneFoodIntValue(index, 'quantitynum');
+    int expitime = await dbhelper.getOneFoodIntValue(index, 'expiretime');
+    String category = await dbhelper.getOneFoodValue(index, 'category');
+    double consumeprogress = await dbhelper.getOneFoodDoubleValue(index, 'consumestate');
+
+     Navigator.push(context, MaterialPageRoute<void>(
+              builder: (BuildContext context) {
+                return Scaffold(
+                  appBar: AppBar(title: Text('Detail Page')),
+
+                  body: Column(
+                    children: <Widget>[
+                      TextButton(
+                        child: Text('Edit'),
+                        onPressed: () {
+                          //var qnum = dbhelper.getOneFoodValue(index, "quantitynum");
+                          Navigator.pop(context);
+                        },
+                      ),
+                      //name
+                      //quantity number and quantity type
+                      Title( color: Colors.blue ,
+                        title: text,
+                        child: Column(
+                          children: <Widget>[
+                            Row(
+                              children: <Widget> [
+                                Text('Storage Now:$quannum $quantype'),
+                                //Text(quantype),
+                              ],
+                            ),
+                            Row(
+                              children: <Widget> [
+                                Text('Category: $category')
+                              ]
+                            ),
+                            Row(
+                              children: <Widget> [
+                                Text('Expires in: $expitime')
+                              ]
+                            ),
+                          ],
+                        ),
+                      //progress bar of cosume state
+                      ),
+                      SizedBox(
+                        height: 5,
+                        child: LinearProgressIndicator(
+                          backgroundColor: Colors.grey[200],
+                          valueColor: AlwaysStoppedAnimation(Colors.blue),
+                          value: consumeprogress,
+                        ),
+                      ),
+                    ]
+                  ),
+                );
+              },
+            ));
+  }
 
   /// opens add new item screen
   void pushAddItemScreen() {
@@ -325,119 +463,127 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
             builder: (context) {
               return Scaffold(
                 appBar: AppBar(
-                    title: Text("Item Detail")
+                  title: Text('Add an item'),
                 ),
-                body: Padding(padding: const EdgeInsets.only(
-                    left: 16, right: 16, top: 4, bottom: 4),
-                    child: Form(
-                      // key: _formKey,
-                      child: Column(
-                        children: [
-                          TextFormField(
-                            keyboardType: TextInputType.emailAddress,
-                            autofocus: true,
-                            decoration: InputDecoration(
-                              labelText: "FoodName",
-                              icon: Icon(Icons.person),
-                            ),
-                            validator: (value) {
-                              if (value!.isEmpty) {
-                                return "Not Empty";
-                              }
-                            },
-                            onSaved: (value) {
-                              // _name = value.toString();
-                              // print("保存用户名：" + _name);
-                            },
-                          ),
-                          TextFormField(
-                            keyboardType: TextInputType.emailAddress,
-                            autofocus: true,
-                            decoration: InputDecoration(
-                              labelText: "Expired",
-                              icon: Icon(Icons.person),
-                            ),
-                            validator: (value) {
-                              if (value!.isEmpty) {
-                                return "Not Empty";
-                              }
-                            },
-                            onSaved: (value) {
-                              // _name = value.toString();
-                              // print("保存用户名：" + _name);
-                            },
-                          ),
-                          Text("Expiration in xxxxx"),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              _buildButtonColumn1(color, 3),
-                              _buildButtonColumn1(color, 4),
-                            ],
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              _buildButtonColumn2(context, color, 'No date'),
-                              DataPicker(),
-                            ],
-                          ),
-                          OutlinedButton(
-                            //When the user press this button, add user inputs into the database
-                            //and add to the previous ListView
-                            onPressed: () {
-                              //convert string to int
-                              try {
-                                var boughttime = int.parse(
-                                    boughtTimeController.text);
-                                var quantityNum = int.parse(
-                                    quanNumController.text);
-                                var expiretime = int.parse(
-                                    expireTimeController.text);
-
-                                //add item name and expiretime to show in the ListView
-                                //and then
-                                addItemExpi(expiretime);
-                                addItemName(nameController.text);
-
-                                //Calculate the current state of the new food
-                                //well actually i should assume the state of a new food should always be good, unless the user is an idiot
-                                //But i'm going to do the calculation anyway
-
-                                //insert new data into database
-                                insertDB(
-                                    nameController.text,
-                                    categoryController.text,
-                                    boughttime,
-                                    expiretime,
-                                    quanTypeController.text,
-                                    quantityNum,
-                                    'good',
-                                    0.0);
-                                print(dbhelper.queryAll('foods'));
-
-                                //user positive value add 1
-                                var user1 = dbhelper.queryAll('users');
-                              } on FormatException {
-                                print('Format Error!');
-                              }
-
-                              // close route
-                              // when push is used, it pushes new item on stack of navigator
-                              // simply pop off stack and it goes back
-                              Navigator.pop(context);
-                              buildList();
-                            },
-                            child: const Icon(Icons.add),
-                          ),
-                        ],
-                      ),
-                    )
+                
+                body: Column(children: <Widget> [TextField(
+                  autofocus: false,
+                  //focusNode: focusNode1,
+                  decoration: InputDecoration(
+                      hintText: 'e.g. Eggs',
+                      contentPadding: EdgeInsets.all(16),
+                      labelText: "Food Name",
+                      prefixIcon: Icon(Icons.food_bank)
+                  ),
+                  controller: nameController,
+                  onSubmitted: (value) {},
                 ),
-              );
+                TextField(
+                  autofocus: true,
+                  //focusNode: focusNode2,
+                  decoration: InputDecoration(
+                      hintText: 'choose correspoding category...',
+                      contentPadding: EdgeInsets.all(16),
+                      labelText: "Category",
+                      prefixIcon: Icon(Icons.food_bank)
+                  ),
+                  controller: categoryController,
+                  obscureText: true
+                ),
+                TextField(
+                  autofocus: true,
+                  //focusNode: focusNode2,
+                  decoration: InputDecoration(
+                      hintText: 'You bought it on...',
+                      contentPadding: EdgeInsets.all(16),
+                      labelText: "Bought Date",
+                      prefixIcon: Icon(Icons.food_bank)
+                  ),
+                  controller: boughtTimeController,
+                  obscureText: true
+                ),
+                TextField(
+                  autofocus: true,
+                  //focusNode: focusNode2,
+                  decoration: InputDecoration(
+                      hintText: 'add remaining expire time',
+                      contentPadding: EdgeInsets.all(16),
+                      labelText: "Expire On",
+                      prefixIcon: Icon(Icons.food_bank)
+                  ),
+                  controller: expireTimeController,
+                  obscureText: true
+                ),
+                TextField(
+                  autofocus: true,
+                  //focusNode: focusNode2,
+                  decoration: InputDecoration(
+                      hintText: 'Quantity',
+                      contentPadding: EdgeInsets.all(16),
+                      labelText: "Quantity Number",
+                      prefixIcon: Icon(Icons.food_bank)
+                  ),
+                  controller: quanNumController,
+                  obscureText: true
+                ),
+                TextField(
+                  autofocus: true,
+                  //focusNode: focusNode2,
+                  decoration: InputDecoration(
+                      hintText: 'Quantity',
+                      contentPadding: EdgeInsets.all(16),
+                      labelText: "Quantity Type",
+                      prefixIcon: Icon(Icons.food_bank)
+                  ),
+                  controller: quanTypeController,
+                  obscureText: true
+                ),
+                FloatingActionButton(
+                  //When the user press this button, add user inputs into the database 
+                  //and add to the previous ListView
+                  onPressed:() {
+
+                    //convert string to int
+                    try{
+                      var boughttime = int.parse(boughtTimeController.text);
+                      var quantityNum = int.parse(quanNumController.text);
+                      var expiretime = int.parse(expireTimeController.text);
+
+                      //add item name and expiretime to show in the ListView
+                    //and then
+                    addItemExpi(expiretime);
+                    addItemName(nameController.text);
+
+                    //Calculate the current state of the new food
+                    //well actually i should assume the state of a new food should always be good, unless the user is an idiot
+                    //But i'm going to do the calculation anyway
+                    
+                    //insert new data into database
+                    insertDB(nameController.text, categoryController.text, boughttime, expiretime, quanTypeController.text, quantityNum, 'good', 0.0);
+                    print(dbhelper.queryAll('foods'));
+
+                    //user positive value add 1
+                    var user1 = dbhelper.queryAll('users');
+
+                    } on FormatException{
+                      print('Format Error!');
+                    }
+
+                     // close route
+                    // when push is used, it pushes new item on stack of navigator
+                     // simply pop off stack and it goes back
+                    Navigator.pop(context);
+                    buildList();
+                  },
+                  tooltip: 'Add food',
+                  child: const Icon(Icons.add),
+                ),
+                ],
+                )       
+              );          
             }
         )
-      );
+    );
   }
   // button list for expiring date (only button)
   ElevatedButton _buildButtonColumn1(Color color, int value) {
@@ -586,18 +732,3 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   }
 
 }
-
-// Row(
-// mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-// children: [
-// _buildButtonColumn1(color, 3),
-// _buildButtonColumn1(color, 4),
-// ],
-// ),
-// Row(
-// mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-// children: [
-// _buildButtonColumn2(context, color, 'No date'),
-// DataPicker(),
-// ],
-// ),

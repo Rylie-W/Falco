@@ -76,12 +76,18 @@ flutter:
     - assets/images/fatchicken.png
     - assets/images/backyard.png
     - assets/anime/normal_bird_male.riv
+    - assets/achievements/initialization.png
+    - assets/achievements/first_encounter.png
+    - assets/achievements/nesting.png
+    - assets/achievements/newborn.png
+    - assets/achievements/courtship.png
+    - assets/achievements/new_coming.png
+    - assets/achievements/snow_owl.png
+    - assets/achievements/tawny_owl.png
+    - assets/achievements/asio_owl.png
+    - assets/achievements/mystery.png
     - assets/anime/female.riv
     - assets/anime/male.riv
-    - assets/icon/person_selected.png
-    - assets/icon/person.png
-    - assets/icon/list_selected.png
-    - assets/icon/list.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

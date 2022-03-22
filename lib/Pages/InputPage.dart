@@ -3,11 +3,41 @@ import 'package:flutter/material.dart';
 
 import '../components/datePicker.dart';
 import '../components/quantityDialog.dart';
+import 'package:less_waste/Helper/DB_Helper.dart';
 
+class InputPage extends StatefulWidget {
+  @override
+  _InputPageState createState() => _InputPageState();
+}
 // Uncomment lines 7 and 10 to view the visual layout at runtime.
 // import 'package:flutter/rendering.dart' show debugPaintSizeEnabled;
-class InputPage extends StatelessWidget {
-  const InputPage({Key? key}) : super(key: key);
+class _InputPageState extends State<InputPage> {
+  //const InputPage({Key? key}) : super(key: key);
+  DateTime dateToday = new DateTime.now();
+  int timeNow = DateTime.now().millisecondsSinceEpoch;
+
+  //Create Databse Object
+  DBHelper dbhelper = DBHelper();
+
+  TextEditingController nameController = TextEditingController();
+  TextEditingController expireTimeController = TextEditingController();
+  TextEditingController boughtTimeController = TextEditingController();
+  TextEditingController quanTypeController = TextEditingController();
+  TextEditingController quanNumController = TextEditingController();
+  TextEditingController categoryController = TextEditingController();
+
+  @override
+  void dispose(){
+    //Clean up all controllers when the widget is disposed
+    nameController.dispose();
+    expireTimeController.dispose();
+    boughtTimeController.dispose();
+    quanNumController.dispose();
+    quanTypeController.dispose();
+    categoryController.dispose();
+    super.dispose();
+  }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +106,7 @@ class InputPage extends StatelessWidget {
 
     /// build item
 
-    var txt = TextEditingController();
+    //var txt = TextEditingController();
 
     return MaterialApp(
       title: 'Flutter layout demo',
@@ -94,8 +124,9 @@ class InputPage extends StatelessWidget {
                 hintStyle: TextStyle(fontWeight: FontWeight.w300),
                 border: UnderlineInputBorder(),
               ),
-              controller: txt,
+              controller: nameController,
               onSubmitted: (value) {
+
                 Navigator.pop(context);
               },
             ),
@@ -107,7 +138,8 @@ class InputPage extends StatelessWidget {
           backgroundColor: const Color(0xff03dac6),
           foregroundColor: Colors.black,
           onPressed: () {
-            // Respond to button press
+            // Respond to button press  -----> write in database
+
           },
           icon: Icon(Icons.add),
           label: Text('EXTENDED'),
@@ -120,6 +152,8 @@ class InputPage extends StatelessWidget {
   ElevatedButton _buildButtonColumn1(Color color, int value) {
     return ElevatedButton.icon(
         onPressed: () {
+          //record new expire time ----> value
+          
           
         },
         icon: Icon(Icons.calendar_today, size: 18),
