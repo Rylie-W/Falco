@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:less_waste/Pages/homePage.dart';
+import 'package:less_waste/components/achievements.dart';
 import 'components/bottomTopScreen.dart';
 import 'package:less_waste/Helper/DB_Helper.dart';
 import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
@@ -86,6 +87,10 @@ class _FrameState extends State<Frame> {
         state: 'good');
     await dbhelper.insertFood(egg);
 
+         //Insert a new UserValue instance
+      var user1 = UserValue(name: "user1", negative: 0, positive: 0, primarystate: "initial", secondarystate: "satisfied", secondaryevent: "single", thirdstate: "move", species: "folca", childrennum: 0, fatherstate: "single", motherstate: "single", time: timeNow);
+      await dbhelper.insertUser(user1);
+      print(await dbhelper.queryAll("users"));
     //await dbhelper.testDB();
 
     //print('###################################third##################################');
@@ -104,25 +109,7 @@ class _FrameState extends State<Frame> {
       case 1:
         return HomePage();
       default:
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Text("This is the search page"),
-          RaisedButton(
-            child: Text(
-              "Start new page",
-              style: TextStyle(color: Colors.white),
-            ),
-            color: Theme
-                .of(context)
-                .primaryColor,
-            onPressed: () {
-              Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => BottomTopScreen()));
-            },
-          )
-        ],
-      );
+      return Achievements();
     }
   }
   @override

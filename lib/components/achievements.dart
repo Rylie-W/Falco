@@ -75,15 +75,14 @@ class Achievements extends StatelessWidget{
       appBar: AppBar(
         title: const Text('My Achievements'),
       ),
-      body: Column(
-        children: [
+      body: SingleChildScrollView(
+        child:
           new Column(
             children: <Widget>[
               getFirstThreeAchievements(state),
               getRemainingAchievements(state)
             ],
           ),
-        ],
       ),
     );
   }
