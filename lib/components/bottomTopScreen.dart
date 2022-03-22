@@ -2,10 +2,12 @@ import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:less_waste/components/quantityDialog.dart';
 
 import '../Pages/InputPage.dart';
 import 'package:less_waste/Helper/DB_Helper.dart';
 import 'dart:convert';
+import 'datePicker.dart';
 
 class BottomTopScreen extends StatefulWidget {
   @override
@@ -42,6 +44,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   //List<String> items = ['eggs','milk','butter];
   DateTime dateToday = new DateTime.now();
   int timeNow = DateTime.now().millisecondsSinceEpoch;
+
 
   //Create Databse Object
   DBHelper dbhelper = DBHelper();
@@ -312,134 +315,163 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
     );
   }
 
+
   /// opens add new item screen
   void pushAddItemScreen() {
+    String date = dateToday.toString().substring(0, 10);
+    Color color = Theme.of(context).primaryColor;
     Navigator.of(context).push(
         MaterialPageRoute(
             builder: (context) {
               return Scaffold(
                 appBar: AppBar(
-                  title: Text('Add an item'),
+                    title: Text("Item Detail")
                 ),
-                
-                body: Column(children: <Widget> [TextField(
-                  autofocus: false,
-                  //focusNode: focusNode1,
-                  decoration: InputDecoration(
-                      hintText: 'e.g. Eggs',
-                      contentPadding: EdgeInsets.all(16),
-                      labelText: "Food Name",
-                      prefixIcon: Icon(Icons.food_bank)
-                  ),
-                  controller: nameController,
-                  onSubmitted: (value) {},
-                ),
-                TextField(
-                  autofocus: true,
-                  //focusNode: focusNode2,
-                  decoration: InputDecoration(
-                      hintText: 'choose correspoding category...',
-                      contentPadding: EdgeInsets.all(16),
-                      labelText: "Category",
-                      prefixIcon: Icon(Icons.food_bank)
-                  ),
-                  controller: categoryController,
-                  obscureText: true
-                ),
-                TextField(
-                  autofocus: true,
-                  //focusNode: focusNode2,
-                  decoration: InputDecoration(
-                      hintText: 'You bought it on...',
-                      contentPadding: EdgeInsets.all(16),
-                      labelText: "Bought Date",
-                      prefixIcon: Icon(Icons.food_bank)
-                  ),
-                  controller: boughtTimeController,
-                  obscureText: true
-                ),
-                TextField(
-                  autofocus: true,
-                  //focusNode: focusNode2,
-                  decoration: InputDecoration(
-                      hintText: 'add remaining expire time',
-                      contentPadding: EdgeInsets.all(16),
-                      labelText: "Expire On",
-                      prefixIcon: Icon(Icons.food_bank)
-                  ),
-                  controller: expireTimeController,
-                  obscureText: true
-                ),
-                TextField(
-                  autofocus: true,
-                  //focusNode: focusNode2,
-                  decoration: InputDecoration(
-                      hintText: 'Quantity',
-                      contentPadding: EdgeInsets.all(16),
-                      labelText: "Quantity Number",
-                      prefixIcon: Icon(Icons.food_bank)
-                  ),
-                  controller: quanNumController,
-                  obscureText: true
-                ),
-                TextField(
-                  autofocus: true,
-                  //focusNode: focusNode2,
-                  decoration: InputDecoration(
-                      hintText: 'Quantity',
-                      contentPadding: EdgeInsets.all(16),
-                      labelText: "Quantity Type",
-                      prefixIcon: Icon(Icons.food_bank)
-                  ),
-                  controller: quanTypeController,
-                  obscureText: true
-                ),
-                FloatingActionButton(
-                  //When the user press this button, add user inputs into the database 
-                  //and add to the previous ListView
-                  onPressed:() {
+                body: Padding(padding: const EdgeInsets.only(
+                    left: 16, right: 16, top: 4, bottom: 4),
+                    child: Form(
+                      // key: _formKey,
+                      child: Column(
+                        children: [
+                          TextFormField(
+                            keyboardType: TextInputType.emailAddress,
+                            autofocus: true,
+                            decoration: InputDecoration(
+                              labelText: "FoodName",
+                              icon: Icon(Icons.person),
+                            ),
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return "Not Empty";
+                              }
+                            },
+                            onSaved: (value) {
+                              // _name = value.toString();
+                              // print("保存用户名：" + _name);
+                            },
+                          ),
+                          TextFormField(
+                            keyboardType: TextInputType.emailAddress,
+                            autofocus: true,
+                            decoration: InputDecoration(
+                              labelText: "Expired",
+                              icon: Icon(Icons.person),
+                            ),
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return "Not Empty";
+                              }
+                            },
+                            onSaved: (value) {
+                              // _name = value.toString();
+                              // print("保存用户名：" + _name);
+                            },
+                          ),
+                          Text("Expiration in xxxxx"),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              _buildButtonColumn1(color, 3),
+                              _buildButtonColumn1(color, 4),
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              _buildButtonColumn2(context, color, 'No date'),
+                              DataPicker(),
+                            ],
+                          ),
+                          OutlinedButton(
+                            //When the user press this button, add user inputs into the database
+                            //and add to the previous ListView
+                            onPressed: () {
+                              //convert string to int
+                              try {
+                                var boughttime = int.parse(
+                                    boughtTimeController.text);
+                                var quantityNum = int.parse(
+                                    quanNumController.text);
+                                var expiretime = int.parse(
+                                    expireTimeController.text);
 
-                    //convert string to int
-                    try{
-                      var boughttime = int.parse(boughtTimeController.text);
-                      var quantityNum = int.parse(quanNumController.text);
-                      var expiretime = int.parse(expireTimeController.text);
+                                //add item name and expiretime to show in the ListView
+                                //and then
+                                addItemExpi(expiretime);
+                                addItemName(nameController.text);
 
-                      //add item name and expiretime to show in the ListView
-                    //and then
-                    addItemExpi(expiretime);
-                    addItemName(nameController.text);
+                                //Calculate the current state of the new food
+                                //well actually i should assume the state of a new food should always be good, unless the user is an idiot
+                                //But i'm going to do the calculation anyway
 
-                    //Calculate the current state of the new food
-                    //well actually i should assume the state of a new food should always be good, unless the user is an idiot
-                    //But i'm going to do the calculation anyway
-                    
-                    //insert new data into database
-                    insertDB(nameController.text, categoryController.text, boughttime, expiretime, quanTypeController.text, quantityNum, 'good', 0.0);
-                    print(dbhelper.queryAll('foods'));
+                                //insert new data into database
+                                insertDB(
+                                    nameController.text,
+                                    categoryController.text,
+                                    boughttime,
+                                    expiretime,
+                                    quanTypeController.text,
+                                    quantityNum,
+                                    'good',
+                                    0.0);
+                                print(dbhelper.queryAll('foods'));
 
-                    //user positive value add 1
-                    var user1 = dbhelper.queryAll('users');
+                                //user positive value add 1
+                                var user1 = dbhelper.queryAll('users');
+                              } on FormatException {
+                                print('Format Error!');
+                              }
 
-                    } on FormatException{
-                      print('Format Error!');
-                    }
-
-                     // close route
-                    // when push is used, it pushes new item on stack of navigator
-                     // simply pop off stack and it goes back
-                    Navigator.pop(context);
-                    buildList();
-                  },
-                  tooltip: 'Add food',
-                  child: const Icon(Icons.add),
+                              // close route
+                              // when push is used, it pushes new item on stack of navigator
+                              // simply pop off stack and it goes back
+                              Navigator.pop(context);
+                              buildList();
+                            },
+                            child: const Icon(Icons.add),
+                          ),
+                        ],
+                      ),
+                    )
                 ),
-                ],
-                )       
-              );          
+              );
             }
         )
-    );
+      );
+  }
+  // button list for expiring date (only button)
+  ElevatedButton _buildButtonColumn1(Color color, int value) {
+    return ElevatedButton.icon(
+        onPressed: () {
+
+        },
+        icon: Icon(Icons.calendar_today, size: 18),
+        label: Text("+ ${value} days"),
+        style: ButtonStyle(
+            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18.0),
+                    side: BorderSide(color: Colors.white)))));
+  }
+
+  // button list for category(show category list)
+  ElevatedButton _buildButtonColumn2(
+      BuildContext context, Color color, String lable) {
+    return ElevatedButton.icon(
+        onPressed: () => showDialog<String>(
+          context: context,
+          builder: (BuildContext context) => AlertDialog(
+            title: Text('Category List'),
+            content: QuantityNumber(),
+          ),
+        ),
+        icon: Icon(Icons.calendar_today, size: 18),
+        label: Text(lable),
+        style: ButtonStyle(
+            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20.0),
+                    side: BorderSide(color: Colors.white)))));
   }
 
   /// opens edit item screen
@@ -475,4 +507,97 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
     );
   }
 
+  // input textfield
+  Widget customizedTextField(controller, hint) {
+      return Padding(
+          padding: const EdgeInsets.only(
+          left: 16, right: 16, top: 4, bottom: 4),
+      child: TextField(
+      onChanged: (String txt) {},
+      style: const TextStyle(
+      fontSize: 20,
+      ),
+      // cursorColor: HotelAppTheme.buildLightTheme().primaryColor,
+        decoration: InputDecoration(
+            contentPadding: EdgeInsets.all(16),
+            labelText: hint,
+            prefixIcon: Icon(Icons.food_bank)
+        ),
+        controller: quanTypeController,
+      )
+    );
+  }
+
+  Widget getAppBarUI() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.blue,
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+              color: Colors.blue,
+              offset: const Offset(0, 2),
+              blurRadius: 4.0),
+        ],
+      ),
+      child: Padding(
+        padding: EdgeInsets.only(
+            top: MediaQuery.of(context).padding.top, left: 8, right: 8),
+        child: Row(
+          children: <Widget>[
+            Container(
+              alignment: Alignment.centerLeft,
+              width: AppBar().preferredSize.height + 40,
+              height: AppBar().preferredSize.height,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: const BorderRadius.all(
+                    Radius.circular(32.0),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Icon(Icons.close),
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Center(
+                child: Text(
+                  'Filters',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 22,
+                  ),
+                ),
+              ),
+            ),
+            Container(
+              width: AppBar().preferredSize.height + 40,
+              height: AppBar().preferredSize.height,
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
 }
+
+// Row(
+// mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+// children: [
+// _buildButtonColumn1(color, 3),
+// _buildButtonColumn1(color, 4),
+// ],
+// ),
+// Row(
+// mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+// children: [
+// _buildButtonColumn2(context, color, 'No date'),
+// DataPicker(),
+// ],
+// ),

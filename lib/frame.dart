@@ -1,13 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:less_waste/Pages/InputPage.dart';
-import 'components/animate_widget.dart';
+import 'package:less_waste/Pages/homePage.dart';
 import 'components/bottomTopScreen.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:less_waste/Helper/DB_Helper.dart';
-import 'package:rive/rive.dart';
-import 'dart:convert';
-
-import 'components/quantityDialog.dart';
+import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
 
 class Frame extends StatefulWidget {
   @override
@@ -19,26 +14,54 @@ class _FrameState extends State<Frame> {
 
   //Create Databse Object
   DBHelper dbhelper = DBHelper();
-<<<<<<< HEAD
   DateTime selectedDate = DateTime.now();
   int timeNow = DateTime.now().millisecondsSinceEpoch;
+  // navigationbar related
+  AnimationController? animationController;
+
   
-  Future<void> insertItem() async{
-       //Insert a new Food butter
-      var butter = Food(id: 0, name: 'butter', category: 'MilkProduct', boughttime: timeNow, expiretime: 156432, quantitytype: 'pieces', quantitynum: 3, consumestate: 0.50, state: 'good'); 
-      await dbhelper.insertFood(butter);
-      var egg = Food(id: 1, name: 'eggs', category: 'Meat', boughttime: timeNow, expiretime: 1654757, quantitytype: 'number', quantitynum: 4, consumestate: 0, state: 'good');
-      await dbhelper.insertFood(egg);
-
-       //Insert a new UserValue instance
-      var user1 = UserValue(name: "user1", negative: 0, positive: 0, primarystate: "initial", secondarystate: "satisfied", secondaryevent: "single", thirdstate: "move", species: "folca", childrennum: 0, fatherstate: "single", motherstate: "single", time: timeNow);
-      await dbhelper.insertUser(user1);
-      print(await dbhelper.queryAll("users"));
-
-      //await dbhelper.testDB();
-=======
-
   Future<void> insertItem() async {
+    //Insert a new Food butter
+    var butter = Food(id: 0,
+        name: 'butter',
+        category: 'MilkProduct',
+        boughttime: timeNow,
+        expiretime: 156432,
+        quantitytype: 'pieces',
+        quantitynum: 3,
+        consumestate: 0.50,
+        state: 'good');
+    await dbhelper.insertFood(butter);
+    var egg = Food(id: 1,
+        name: 'eggs',
+        category: 'Meat',
+        boughttime: timeNow,
+        expiretime: 1654757,
+        quantitytype: 'number',
+        quantitynum: 4,
+        consumestate: 0,
+        state: 'good');
+    await dbhelper.insertFood(egg);
+
+    //Insert a new UserValue instance
+    var user1 = UserValue(name: "user1",
+        negative: 0,
+        positive: 0,
+        primarystate: "initial",
+        secondarystate: "satisfied",
+        secondaryevent: "single",
+        thirdstate: "move",
+        species: "folca",
+        childrennum: 0,
+        fatherstate: "single",
+        motherstate: "single",
+        time: timeNow);
+    await dbhelper.insertUser(user1);
+    print(await dbhelper.queryAll("users"));
+
+    //await dbhelper.testDB();
+  }
+  Future<void> insertItem_withoutUser() async {
     //Insert a new Food butter
     var butter = Food(
         id: 0,
@@ -64,105 +87,68 @@ class _FrameState extends State<Frame> {
     await dbhelper.insertFood(egg);
 
     //await dbhelper.testDB();
->>>>>>> b2b0b0a2ffdc0a036a259c0e96280993d58c654b
 
     //print('###################################third##################################');
     //print(await dbhelper.queryAll("foods"));
   }
 
-  //anime list
-  final List<String> list = [
-    'assets/images/fatchicken.png',
-  ];
-  XFile? image;
 
-  // XFile? image = await picker.pickImage(source: ImageSource.camera);
-  Future pickImage() async {
-    final image = await ImagePicker().pickImage(source: ImageSource.camera);
-    if (image == null) return;
-    final imageTemp = XFile(image.path);
-    setState(() => this.image = imageTemp);
+  //bottom navigation
+
+  int currentPage = 1;
+  GlobalKey bottomNavigationKey = GlobalKey();
+  _getPage(int page) {
+    switch (page) {
+      case 0:
+        return BottomTopScreen();
+      case 1:
+        return HomePage();
+      default:
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Text("This is the search page"),
+          RaisedButton(
+            child: Text(
+              "Start new page",
+              style: TextStyle(color: Colors.white),
+            ),
+            color: Theme
+                .of(context)
+                .primaryColor,
+            onPressed: () {
+              Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => BottomTopScreen()));
+            },
+          )
+        ],
+      );
+    }
   }
-
-  final GlobalKey<FrameAnimationImageState> _key =
-      new GlobalKey<FrameAnimationImageState>();
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          actions: <Widget>[
-            IconButton(icon: Icon(Icons.share), onPressed: () {}),
-          ],
-        ),
-        bottomNavigationBar: BottomAppBar(
-          color: Colors.white,
-          shape: CircularNotchedRectangle(),
-          child: Row(
-            children: [
-              IconButton(
-                  onPressed: () {
-                    insertItem();
-                    showModalBottomSheet(
-                        isScrollControlled: true,
-                        context: context,
-                        builder: (BuildContext context) => BottomTopScreen());
-                    // pickImage();
-                  },
-                  icon: Icon(Icons.home)),
-              //SizedBox(),
-              IconButton(
-                  onPressed: () {
-                    insertItem();
-                    showModalBottomSheet(
-                        isScrollControlled: true,
-                        context: context,
-                        builder: (BuildContext context) => InputPage());
-                  },
-                  icon: Icon(Icons.business)),
-              IconButton(onPressed: () {}, icon: Icon(Icons.school))
-            ],
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-          ),
-        ),
-        /*
-      bottomNavigationBar: BottomNavigationBar(
-        items: <BottomNavigationBarItem [
-          BottomNavigationBarItem(icon: Icon(Icons.home), title: Text('Home')),
-          BottomNavigationBarItem(icon: Icon(Icons.business), title: Text('Warehouse')),
-          BottomNavigationBarItem(icon: Icon(Icons.school), title: Text('Achivements')),
+      bottomNavigationBar:  FancyBottomNavigation(
+        tabs: [
+          TabData(iconData: Icons.book, title: "List"),
+          TabData(iconData: Icons.home, title: "Home"),
+          TabData(iconData: Icons.flag, title: "Achievement")
         ],
-        //currentIndex: _,
-        fixedColor: Colors.blue,
-        onTap: ,
+        onTabChangedListener: (position) {
+          setState(() {
+            currentPage = position;
+          });
+        },
       ),
-      */
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: Colors.lightBlueAccent,
-          child: Icon(Icons.add),
-          onPressed: () {
-            insertItem();
-            showModalBottomSheet(
-                isScrollControlled: true,
-                context: context,
-                builder: (BuildContext context) => BottomTopScreen());
-            // pickImage();
-          },
+      body: Container(
+        decoration: BoxDecoration(color: Colors.white),
+        child: Center(
+          child: _getPage(currentPage),
         ),
-        body: new Stack(
-          children: <Widget>[
-            new Container(
-              decoration: new BoxDecoration(
-                image: new DecorationImage(
-                  image: new AssetImage("assets/images/backyard.png"),
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-            new Center(
-              child: RiveAnimation.asset('assets/anime/normal_bird_male.riv'),
-            )
-          ],
-        ));
+      ),
+    );
+
   }
 }
+
+
