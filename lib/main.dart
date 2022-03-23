@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:less_waste/Pages/InputPage.dart';
 import 'frame.dart';
 
 void main() {
