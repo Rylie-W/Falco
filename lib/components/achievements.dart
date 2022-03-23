@@ -3,14 +3,14 @@ import 'package:less_waste/Helper/DB_Helper.dart';
 import 'dart:async';
 
 class Achievements extends StatelessWidget{
-  final Map<String,int> _stateMap = {
+  static const Map<String,int> stateMap = {
   "initialization": 0,
-  "first encounter": 1,
-  "courtship": 2,
-  "nesting": 3,
-  "incubation": 4,
-  "growing up": 5,
-  "leaving home": 6,
+  "encounter": 1,
+  "mate": 2,
+  "nest": 3,
+  "hatch": 4,
+  "learn": 5,
+  "leavehome": 6,
   "snow owl":7,
   "tawny owl":8,
   "mystery 1":9,
@@ -67,7 +67,7 @@ class Achievements extends StatelessWidget{
   Widget build(BuildContext context){
     this.width = MediaQuery.of(context).size.width;
     this.height = MediaQuery.of(context).size.height;
-    int state=_stateMap[getPrimaryState()]??0;
+    int state=stateMap[getPrimaryState()]??0;
     // int state=6;
 
     return Scaffold(
@@ -89,7 +89,7 @@ class Achievements extends StatelessWidget{
   
   Widget getRemainingAchievements(int state){
     List<int> states=[2,3,4,5,6,7,8,9,10,11];
-    if (state>1){
+    if (state>1&&state<11){
       states.removeAt(state-1);
     }
     else{

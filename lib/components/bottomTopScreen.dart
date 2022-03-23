@@ -7,7 +7,9 @@ import 'package:less_waste/components/quantityDialog.dart';
 import '../Pages/InputPage.dart';
 import 'package:less_waste/Helper/DB_Helper.dart';
 import 'dart:convert';
+import 'achievements.dart';
 import 'datePicker.dart';
+import 'dart:async';
 
 
 class BottomTopScreen extends StatefulWidget {
@@ -181,25 +183,43 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   Future<void> updatePrimaryState() async{
     var user1 = await dbhelper.queryAll('users');
     int value = user1[0].positive - user1[0].negative;
+    String primaryState;
 
-    if(value > 0 && value <= 6){
+    if (value < 2){
+      primaryState='initialization';
+      await dbhelper.updateUserPrimary(primaryState);
+    }
+    if (value <= 6){
       //judge the primary state
-      await dbhelper.updateUserPrimary('encounter');
+      primaryState='encounter';
+      await dbhelper.updateUserPrimary(primaryState);
     }
-    if(value > 6 && value <= 10){
-      await dbhelper.updateUserPrimary('mate');
+    if(value > 6 && value <= 14){
+      primaryState='mate';
+      await dbhelper.updateUserPrimary(primaryState);
     }
-    if(value > 10 && value <= 20){
-      await dbhelper.updateUserPrimary('nest');
+    if(value > 14 && value <= 30){
+      primaryState='nest';
+      await dbhelper.updateUserPrimary(primaryState);
     }
-    if(value > 20 && value <= 30){
-      await dbhelper.updateUserPrimary('hatch');
+    if(value > 30 && value <= 46){
+      primaryState='hatch';
+      await dbhelper.updateUserPrimary(primaryState);
     }
-    if(value > 30 && value <= 40){
-      await dbhelper.updateUserPrimary('learn');
+    if(value > 46 && value <= 78){
+      primaryState='learn';
+      await dbhelper.updateUserPrimary(primaryState);
     }
-    else if(value > 40 && value <= 50){
-       dbhelper.updateUserPrimary('leavehome');
+    else if(value > 78 && value <= 82){
+      primaryState='leavehome';
+      await dbhelper.updateUserPrimary(primaryState);
+    }
+    else if(value > 82 && value <= 91){
+      primaryState='snow owl';
+      await dbhelper.updateUserPrimary(primaryState);
+    }
+    else if(value > 91 && value <= 100){
+      primaryState='tawny owl';
     }
   }
 
@@ -392,7 +412,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
     );
   }
 
-  void pushItemDetailScreen(int index, String text) async{
+  Future<void> pushItemDetailScreen(int index, String text) async{
     String quantype = await dbhelper.getOneFoodValue(index, 'quantitytype');
     int quannum = await dbhelper.getOneFoodIntValue(index, 'quantitynum');
     int expitime = await dbhelper.getOneFoodIntValue(index, 'expiretime');
@@ -455,7 +475,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   }
 
   /// opens add new item screen
-  void pushAddItemScreen() {
+  Future<void> pushAddItemScreen() async{
     String date = dateToday.toString().substring(0, 10);
     Color color = Theme.of(context).primaryColor;
     Navigator.of(context).push(
@@ -541,7 +561,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                 FloatingActionButton(
                   //When the user press this button, add user inputs into the database 
                   //and add to the previous ListView
-                  onPressed:() {
+                  onPressed:() async {
 
                     //convert string to int
                     try{
@@ -563,7 +583,12 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                     print(dbhelper.queryAll('foods'));
 
                     //user positive value add 1
-                    var user1 = dbhelper.queryAll('users');
+                    updateUserValue("positive");
+                    var user1 = await dbhelper.queryAll('users');
+                    String check = checkIfPrimaryStateChanged(user1[0].positive-user1[0].negative);
+                    if (check!='None'){
+                      showAchievementDialog(check);
+                    }
 
                     } on FormatException{
                       print('Format Error!');
@@ -585,6 +610,37 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
         )
     );
   }
+
+  String checkIfPrimaryStateChanged(int value){
+    if (value==2){
+      return Achievements.achievementNameList[1];
+    }
+    else if (value==7){
+      return Achievements.achievementNameList[2];
+    }
+    else if (value==15){
+      return Achievements.achievementNameList[3];
+    }
+    else if (value==31){
+      return Achievements.achievementNameList[4];
+    }
+    else if (value==47){
+      return Achievements.achievementNameList[5];
+    }
+    else if (value==79){
+      return Achievements.achievementNameList[6];
+    }
+    else if (value==83){
+      return Achievements.achievementNameList[7];
+    }
+    else if (value==92){
+      return Achievements.achievementNameList[8];
+    }
+    else{
+      return "None";
+    }
+  }
+
   // button list for expiring date (only button)
   ElevatedButton _buildButtonColumn1(Color color, int value) {
     return ElevatedButton.icon(
@@ -731,4 +787,38 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
     );
   }
 
+  showAchievementDialog(String state){
+    double width= MediaQuery.of(context).size.width;
+    double height= MediaQuery.of(context).size.height;
+    int stateIndex= Achievements.stateMap[state]??-1;
+    AlertDialog dialog = AlertDialog(
+      title: const Text("Congratulations!"),
+      content:
+      new Container(
+        width: 3*width/5,
+        height: height/3,
+        padding: const EdgeInsets.all(10.0),
+        child:
+        new Column(
+          children: [
+            Expanded(child: stateIndex>-1? Image.asset(Achievements.imageList[stateIndex]):Image.asset(Achievements.imageList[12])),
+            Text(
+                stateIndex>-1?"You have made the achievement "+Achievements.achievementNameList[stateIndex]:"Something goes wrong. We are fixing it.",
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontWeight: FontWeight.bold))
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, 'OK'),
+          child: const Text('OK'),
+        ),
+      ],
+    );
+    showDialog(context: context, builder: (BuildContext context){
+      return dialog;
+    });
+  }
 }
