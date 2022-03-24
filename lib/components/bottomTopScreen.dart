@@ -42,6 +42,16 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   //FocusNode focusNode2 = FocusNode();
   //FocusScopeNode? focusScopeNode;
 
+  Map<String, String> GlobalCateIconMap = {
+    "SeaFood": "assets/category/seafood.png",
+    "Meat": "assets/category/meat.png",
+    "Milk": "assets/category/seafood.png",
+    "MilkProduct": "assets/category/seafood.png",
+    "Fruits": "assets/category/fruits.png",
+    "Vegetable": "assets/category/vegetable.png",
+    "Others": "assets/category/meat.png"
+  };
+
   String foodName = '';
   bool showSuggestList = false;
   List<String> items = [];
@@ -280,15 +290,13 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
         // alternatively use snapshot.connectionState != ConnectionState.done
         if(snapshot.hasError) return const Text('Something went wrong.');
         final List<String> items = snapshot.requireData;
-        print(items);
-        
+
     
         return FutureBuilder(future: getItemExpireingTime() , builder: (BuildContext context, AsyncSnapshot<List<int>> snapshot) {
           if (!snapshot.hasData) return const Text('Loading...'); // still loading
           // alternatively use snapshot.connectionState != ConnectionState.done
           if (snapshot.hasError) return const Text('Something went wrong.');
           final List<int> expires = snapshot.requireData;
-          print(expires);
           if (items.length < 1) {
             return Center(
               child: Text("Nothing yet...",
@@ -299,34 +307,63 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
             );
           }
 
-          return ListTileTheme(
-              contentPadding: EdgeInsets.all(15),
-              textColor: Colors.black54,
-              style: ListTileStyle.list,
-              dense: true,
-              child: ListView.builder(
-                  itemCount: items.length,
-                  itemBuilder: (context, index) {
-                    var item = items[index];
-                    //how to show the quantity tyoe and quantity number?
+          return FutureBuilder(future: getItemQuanNum(), builder: (BuildContext context, AsyncSnapshot<List<int>> snapshot) {
+            if (!snapshot.hasData) return const Text('Loading...'); // still loading
+            // alternatively use snapshot.connectionState != ConnectionState.done
+            if (snapshot.hasError) return const Text('Something went wrong.');
+            final List<int> num = snapshot.requireData;
+            return FutureBuilder(future: getItemQuanType(), builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
+              if (!snapshot.hasData) return const Text('Loading...'); // still loading
+              // alternatively use snapshot.connectionState != ConnectionState.done
+              if (snapshot.hasError) return const Text('Something went wrong.');
+              final List<String> type = snapshot.requireData;
+              return ListTileTheme(
+                contentPadding: EdgeInsets.all(15),
+                textColor: Colors.black54,
+                style: ListTileStyle.list,
+                dense: true,
+                child: ListView.builder(
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      var item = items[index];
+                      //how to show the quantity tyoe and quantity number?
 
-                    //var expires = getItemExpireingTime();
-                    var expire = expires[index];
-                    //how to show the listsby sequence of expire time?
-                    final sortedItems = expires.reversed.toList();
-                    expire = sortedItems[index];
+                      //var expires = getItemExpireingTime();
+                      var expire = expires[index];
+                      //how to show the listsby sequence of expire time?
+                      final sortedItems = expires.reversed.toList();
+                      expire = sortedItems[index];
 
-                    return buildItem(item, expire, index);
-                  }
-              )
-          );
+                      var foodNum = num[index];
+                      var foodType = type[index];
+
+                      return buildItem(item, expire, foodNum, foodType, index);
+                    }
+                )
+            );
+            });
+          });
+
+
         });
       }
-    );   
+    );
   }
-  
 
-  Widget buildItem(String text, int expire, int index) {
+
+  Widget buildItem(String text, int expire, int foodNum, String foodType, int index) {
+    var categoryIconImagePath = null;
+    if(GlobalCateIconMap[text] == null) {
+      categoryIconImagePath = GlobalCateIconMap["Others"];
+    } else {
+      print(GlobalCateIconMap.values);
+      print(GlobalCateIconMap[text]);
+      print(text);
+      print("not null");
+      categoryIconImagePath = GlobalCateIconMap[text];
+      print("milk exception");
+      print(categoryIconImagePath);
+    };
     return Card(
       elevation: 3,
       shape: RoundedRectangleBorder(
@@ -397,8 +434,12 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
             padding: EdgeInsets.only(right: 12.0),
             decoration: new BoxDecoration(
                 border: new Border(
-                    right: new BorderSide(width: 1.0, color: Colors.grey))),
-            child: Icon(Icons.fastfood),
+                    right: new BorderSide(width: 1.0))),
+            child: Image(
+              image: AssetImage("$categoryIconImagePath"),
+              width: 32,
+              height: 32,
+            ),
           ),
           title: Text(text, style: TextStyle( fontSize: 25), ),
           subtitle: Row(
@@ -422,7 +463,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
             ],
           ),
           // subtitle: Text("Expired in $expire days", style: TextStyle(fontStyle: FontStyle.italic),),
-          trailing: Text("2" + " " + "Stück", style: TextStyle(
+          trailing: Text("$foodNum $foodType", style: TextStyle(
             fontFamily: 'Roboto',
             fontSize: 24,
           )),

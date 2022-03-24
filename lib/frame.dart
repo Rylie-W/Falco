@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:less_waste/Pages/homePage.dart';
-import 'package:less_waste/components/achievements.dart';
+import 'package:less_waste/Pages/AchievementPage.dart';
 import 'components/bottomTopScreen.dart';
 import 'package:less_waste/Helper/DB_Helper.dart';
 import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
