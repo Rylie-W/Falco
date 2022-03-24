@@ -7,6 +7,7 @@ String sheepUrl = 'https://i.stack.imgur.com/wKzo8.png';
 String goatUrl = 'https://i.stack.imgur.com/Qt4JP.png';
 
 class BodyWidget extends StatelessWidget {
+  var category;
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -18,10 +19,12 @@ class BodyWidget extends StatelessWidget {
             leading: CircleAvatar(
               backgroundImage: NetworkImage(horseUrl),
             ),
-            title: Text('Horse'),
+            title: Text('Meat'),
             subtitle: Text('A strong animal'),
             onTap: () {
-              print('horse');
+              print('Meat');
+              category = 'Meat';
+              //Navigator.pop(context, category);
             },
             selected: true,
           ),
@@ -29,20 +32,24 @@ class BodyWidget extends StatelessWidget {
             leading: CircleAvatar(
               backgroundImage: AssetImage("assets/category/meat.png"),
             ),
-            title: Text('Cow'),
+            title: Text('MilkProduct'),
             subtitle: Text('Provider of milk'),
             onTap: () {
-              print('cow');
+              print('MilkProduct');
+              category = 'MilkProduct';
+              //Navigator.pop(context, category);
             },
           ),
           ListTile(
             leading: CircleAvatar(
               backgroundImage: NetworkImage(camelUrl),
             ),
-            title: Text('Camel'),
+            title: Text('Seafood'),
             subtitle: Text('Comes with humps'),
             onTap: () {
-              print('camel');
+              print('Seafood');
+              category = 'Seafood';
+              //Navigator.pop(context, category);
             },
             enabled: false,
           ),
@@ -50,20 +57,24 @@ class BodyWidget extends StatelessWidget {
             leading: CircleAvatar(
               backgroundImage: NetworkImage(sheepUrl),
             ),
-            title: Text('Sheep'),
+            title: Text('Fruits'),
             subtitle: Text('Provides wool'),
             onTap: () {
-              print('sheep');
+              print('Fruits');
+              category = 'Fruits';
+              //Navigator.pop(context, category);
             },
           ),
           ListTile(
             leading: CircleAvatar(
               backgroundImage: NetworkImage(goatUrl),
             ),
-            title: Text('Goat'),
+            title: Text('Vegetables'),
             subtitle: Text('Some have horns'),
             onTap: () {
-              print('goat');
+              print('Vegetables');
+              category = 'Vegetables';
+              //Navigator.pop(context, category);
             },
           ),
         ],

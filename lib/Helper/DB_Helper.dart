@@ -266,7 +266,6 @@ class DBHelper{
    
     var maxId = await dbHelper.rawQuery('SELECT max(id) fROM foods');
 
-    print('###################################$maxId############################');
     //Convert the List<Map<String, dynamic> into a String
     var maxID = maxId[0]['max(id)'];
 
@@ -311,9 +310,9 @@ class DBHelper{
     final List<Map<String, dynamic>> maps = await dbHelper.query('foods', columns: [value], where: 'consumestate < 1');
 
     //Convert the List<Map<String, dynamic> into a List<String>
-    var foodsname = List<String>.generate(maps.length, (i) => maps[i][value]);
+    var foodstring = List<String>.generate(maps.length, (i) => maps[i][value]);
 
-    return foodsname;
+    return foodstring;
 
   }
 
@@ -326,9 +325,9 @@ class DBHelper{
     final List<Map<String, dynamic>> maps = await dbHelper.query('foods', columns: [value], where: 'consumestate < 1');
 
     //Convert the List<Map<String, dynamic> into a List<String>
-    var foodsname = List<int>.generate(maps.length, (i) => maps[i][value]);
+    var foodsint = List<int>.generate(maps.length, (i) => maps[i][value]);
 
-    return foodsname;
+    return foodsint;
 
   }
 
