@@ -231,6 +231,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   Future<void> updateUserValue(String state) async{
     var user1 = await dbhelper.queryAll('users');
     //int value = user1[0]['positive'] - user1[0]['negative'];
+    print('================= user =================');
     print(user1);
   
 

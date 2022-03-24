@@ -48,7 +48,7 @@ class _HomePageState extends State<HomePage> {
       "image": imageData
     };
     print(imageData);
-    var response = await http.post(Uri.parse(url_to_api), body:bodyData);
+    var response = await http.post(Uri.parse(url_to_api), body:bodyData,headers: {'Content-Type': 'application/json'});
     print(response);
     print(response.body);
     print(response.statusCode);
