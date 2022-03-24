@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class QuantityNumber extends StatefulWidget {
+  var quantityNum = _QuantityNumberState().pressedAttentionIndex;
   @override
   _QuantityNumberState createState() => _QuantityNumberState();
 }

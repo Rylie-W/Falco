@@ -27,7 +27,7 @@ class _FrameState extends State<Frame> {
         name: 'butter',
         category: 'MilkProduct',
         boughttime: timeNow,
-        expiretime: 156432,
+        expiretime: 1649969762604,
         quantitytype: 'pieces',
         quantitynum: 3,
         consumestate: 0.50,
@@ -37,7 +37,7 @@ class _FrameState extends State<Frame> {
         name: 'eggs',
         category: 'Meat',
         boughttime: timeNow,
-        expiretime: 1654757,
+        expiretime: 1697969762604,
         quantitytype: 'number',
         quantitynum: 4,
         consumestate: 0,
@@ -86,6 +86,7 @@ class _FrameState extends State<Frame> {
         consumestate: 0,
         state: 'good');
     await dbhelper.insertFood(egg);
+      print(await dbhelper.queryAll("foods"));
 
          //Insert a new UserValue instance
       var user1 = UserValue(name: "user1", negative: 0, positive: 0, primarystate: "initial", secondarystate: "satisfied", secondaryevent: "single", thirdstate: "move", species: "folca", childrennum: 0, fatherstate: "single", motherstate: "single", time: timeNow);
@@ -101,10 +102,11 @@ class _FrameState extends State<Frame> {
   //bottom navigation
 
   int currentPage = 1;
+ 
   GlobalKey bottomNavigationKey = GlobalKey();
   _getPage(int page) {
     switch (page) {
-      case 0:
+      case 0:       
         return BottomTopScreen();
       case 1:
         return HomePage();
@@ -114,6 +116,7 @@ class _FrameState extends State<Frame> {
   }
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       bottomNavigationBar:  FancyBottomNavigation(
         tabs: [
@@ -124,6 +127,7 @@ class _FrameState extends State<Frame> {
         onTabChangedListener: (position) {
           setState(() {
             currentPage = position;
+            insertItem();
           });
         },
       ),
