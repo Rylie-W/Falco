@@ -1,15 +1,11 @@
 import 'dart:convert';
-
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:typed_data';
-import 'package:flutter/services.dart';
-
-import 'package:path/path.dart';
-import 'package:async/async.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
+import 'package:rive/rive.dart';
+
+import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key, this.animationController}) : super(key: key);
@@ -38,21 +34,22 @@ class _HomePageState extends State<HomePage> {
       imageFile = File(image.path);
       imageData = base64Encode(imageFile.readAsBytesSync());
     });
-    doUpload(image);
+    doUpload();
   }
 
   //upload picture request related
   final url_to_api = "http://34.65.81.128:5000/";
-  doUpload(image) async {
-    var bodyData = {
-      "image": imageData
+
+  doUpload() async {
+    Map<String, dynamic> jsonMap = {
+      "image": imageData,
+      "headers": { "Content-Type": "application/json"}
     };
-    print(imageData);
-    var response = await http.post(Uri.parse(url_to_api), body:bodyData,headers: {'Content-Type': 'application/json'});
-    print(response);
+    String jsonString = json.encode(jsonMap);
+    http.Response response = await http.post(Uri.parse(url_to_api), body:jsonString);
     print(response.body);
-    print(response.statusCode);
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

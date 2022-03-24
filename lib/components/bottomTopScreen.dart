@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:less_waste/components/quantityDialog.dart';
 
+import '../Pages/AchievementPage.dart';
 import '../Pages/InputPage.dart';
+import 'dialog.dart';
 import 'package:less_waste/Helper/DB_Helper.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'dart:convert';
@@ -44,15 +46,26 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   //FocusNode focusNode2 = FocusNode();
   //FocusScopeNode? focusScopeNode;
 
+  Map<String, String> GlobalCateIconMap = {
+    "SeaFood": "assets/category/seafood.png",
+    "Meat": "assets/category/meat.png",
+    "Milk": "assets/category/seafood.png",
+    "MilkProduct": "assets/category/seafood.png",
+    "Fruits": "assets/category/fruits.png",
+    "Vegetable": "assets/category/vegetable.png",
+    "Others": "assets/category/meat.png"
+  };
+
   String foodName = '';
   bool showSuggestList = false;
   List<String> items = [];
   //List<String> items = ['eggs','milk','butter];
-  DateTime dateToday = new DateTime.now();
+  DateTime timeNowDate = new DateTime.now();
   int timeNow = DateTime.now().millisecondsSinceEpoch;
 
   //Create Databse Object
   DBHelper dbhelper = DBHelper();
+  List food = ['', '', -1, -1, '', -1, -1.0, ''];
 
   
   
@@ -69,12 +82,13 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
       //print(await dbhelper.queryAll("foods"));
   }
 
-  Future<void> insertDB(String name, String category, int boughttime, int expiretime, String quantitytype, int quantitynum, String state, double consumestate) async{
+
+  Future<void> insertDB(List _food) async{
 
     var maxId = await dbhelper.getMaxId();
     print('##########################MaxID = $maxId###############################');
     maxId = maxId + 1;
-    var newFood = Food(id: maxId, name: name, category: category, boughttime: boughttime, expiretime: expiretime, quantitytype: quantitytype, quantitynum: quantitynum, consumestate: consumestate, state: state);
+    var newFood = Food(id: maxId, name: _food[0], category: _food[1], boughttime: _food[2], expiretime: _food[3], quantitytype: _food[4], quantitynum: _food[5], consumestate: _food[6], state: _food[7]);
     print(newFood);
 
     await dbhelper.insertFood(newFood);
@@ -111,12 +125,18 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
     return type;
   }
 
-   Future<List<int>> getItemExpireingTime() async{
+   Future<List<DateTime>> getItemExpireingTime() async{
     //get all foods quantity number as a list of integers
     List<int> expire = await dbhelper.getAllUncosumedFoodIntValues('expiretime') ;
+    var maxID = await dbhelper.getMaxId() + 1;
+
+    //int index = 0;
+    //Convert the List<int> into a List<DateTime>/ timestamp ----->  DateTime
+    var expireDate = List<DateTime>.generate(maxID, (i) => DateTime.fromMillisecondsSinceEpoch(expire[i]));
+    print('#########################$expireDate##################');
     //print('############################################second##########################');
     //print(expire);
-    return expire;
+    return expireDate;
   }
 
   Future<void> addItemName(value) async {
@@ -130,7 +150,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
     });
   }
 
-    Future<void> addItemExpi(value) async {
+  Future<void> addItemExpi(value) async {
 
     List<int> expires = await dbhelper.getAllUncosumedFoodIntValues('expiretime');
     print(expires);
@@ -255,6 +275,11 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
 
   @override
   Widget build(BuildContext context) {
+    DateTime dateToday = new DateTime.now();
+    String date = dateToday.toString().substring(0, 10);
+
+    Color color = Theme.of(context).primaryColor;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Item List'),
@@ -264,7 +289,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
         children: [
           TextButton.icon(
             onPressed: (){
-
+              //order the ListView
             },
             icon: RotatedBox(
               quarterTurns: 1,
@@ -286,10 +311,20 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
         onPressed: () {
           // clear out txt buffer before entering new screen
           txt.value = new TextEditingValue();
+          //pushAddItemPage();
           pushAddItemScreen();
         },
       ),
     );
+  }
+
+  void pushAddItemPage() {
+    //String date = dateToday.toString().substring(0, 10);
+    Color color = Theme.of(context).primaryColor;
+    Navigator.of(context).push(
+        MaterialPageRoute(builder: (context) => InputPage())
+    );
+
   }
 
   Widget buildList() {
@@ -301,14 +336,15 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
         // alternatively use snapshot.connectionState != ConnectionState.done
         if(snapshot.hasError) return const Text('Something went wrong.');
         final List<String> items = snapshot.requireData;
-        print(items);
-        
+
     
-        return FutureBuilder(future: getItemExpireingTime() , builder: (BuildContext context, AsyncSnapshot<List<int>> snapshot) {
+        return FutureBuilder(
+          future: getItemExpireingTime() ,
+          builder: (BuildContext context, AsyncSnapshot<List<DateTime>> snapshot) {
           if (!snapshot.hasData) return const Text('Loading...'); // still loading
           // alternatively use snapshot.connectionState != ConnectionState.done
           if (snapshot.hasError) return const Text('Something went wrong.');
-          final List<int> expires = snapshot.requireData;
+          final List<DateTime> expires = snapshot.requireData;
           print(expires);
           if (items.length < 1) {
             return Center(
@@ -320,34 +356,64 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
             );
           }
 
-          return ListTileTheme(
-              contentPadding: EdgeInsets.all(15),
-              textColor: Colors.black54,
-              style: ListTileStyle.list,
-              dense: true,
-              child: ListView.builder(
-                  itemCount: items.length,
-                  itemBuilder: (context, index) {
-                    var item = items[index];
-                    //how to show the quantity tyoe and quantity number?
+          return FutureBuilder(future: getItemQuanNum(), builder: (BuildContext context, AsyncSnapshot<List<int>> snapshot) {
+            if (!snapshot.hasData) return const Text('Loading...'); // still loading
+            // alternatively use snapshot.connectionState != ConnectionState.done
+            if (snapshot.hasError) return const Text('Something went wrong.');
+            final List<int> num = snapshot.requireData;
+            return FutureBuilder(future: getItemQuanType(), builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
+              if (!snapshot.hasData) return const Text('Loading...'); // still loading
+              // alternatively use snapshot.connectionState != ConnectionState.done
+              if (snapshot.hasError) return const Text('Something went wrong.');
+              final List<String> type = snapshot.requireData;
+              return ListTileTheme(
+                contentPadding: EdgeInsets.all(15),
+                textColor: Colors.black54,
+                style: ListTileStyle.list,
+                dense: true,
+                child: ListView.builder(
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      var item = items[index];
+                      //how to show the quantity tyoe and quantity number?
 
-                    //var expires = getItemExpireingTime();
-                    var expire = expires[index];
-                    //how to show the listsby sequence of expire time?
-                    final sortedItems = expires.reversed.toList();
-                    expire = sortedItems[index];
+                      //var expires = getItemExpireingTime();
+                      var expire = expires[index];
+                      //how to show the listsby sequence of expire time?
+                      final sortedItems = expires.reversed.toList();
+                      expire = sortedItems[index];
+                      var remainDays = expires[index].difference(timeNowDate).inDays;
 
-                    return buildItem(item, expire, index);
-                  }
-              )
-          );
+                      var foodNum = num[index];
+                      var foodType = type[index];
+
+                      return buildItem(item, expire, foodNum, foodType, index);
+                    }
+                )
+            );
+            });
+          });
+
+
         });
       }
     );   
   }
   
 
-  Widget buildItem(String text, int expire, int index) {
+  Widget buildItem(String text, DateTime expire, int foodNum, String foodType, int index) {
+    var categoryIconImagePath = null;
+    if(GlobalCateIconMap[text] == null) {
+      categoryIconImagePath = GlobalCateIconMap["Others"];
+    } else {
+      print(GlobalCateIconMap.values);
+      print(GlobalCateIconMap[text]);
+      print(text);
+      print("not null");
+      categoryIconImagePath = GlobalCateIconMap[text];
+      print("milk exception");
+      print(categoryIconImagePath);
+    };
     return Card(
       elevation: 3,
       shape: RoundedRectangleBorder(
@@ -418,8 +484,12 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
             padding: EdgeInsets.only(right: 12.0),
             decoration: new BoxDecoration(
                 border: new Border(
-                    right: new BorderSide(width: 1.0, color: Colors.grey))),
-            child: Icon(Icons.fastfood),
+                    right: new BorderSide(width: 1.0))),
+            child: Image(
+              image: AssetImage("$categoryIconImagePath"),
+              width: 32,
+              height: 32,
+            ),
           ),
           title: Text(text, style: TextStyle( fontSize: 25), ),
           subtitle: Row(
@@ -443,7 +513,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
             ],
           ),
           // subtitle: Text("Expired in $expire days", style: TextStyle(fontStyle: FontStyle.italic),),
-          trailing: Text("2" + " " + "Stück", style: TextStyle(
+          trailing: Text("$foodNum $foodType", style: TextStyle(
             fontFamily: 'Roboto',
             fontSize: 24,
           )),
@@ -470,6 +540,9 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
     String quantype = await dbhelper.getOneFoodValue(index, 'quantitytype');
     int quannum = await dbhelper.getOneFoodIntValue(index, 'quantitynum');
     int expitime = await dbhelper.getOneFoodIntValue(index, 'expiretime');
+    var expireDate =DateTime.fromMillisecondsSinceEpoch(expitime);
+    var remainDays = expireDate.difference(timeNowDate).inDays;
+
     String category = await dbhelper.getOneFoodValue(index, 'category');
     double consumeprogress = await dbhelper.getOneFoodDoubleValue(index, 'consumestate');
 
@@ -495,7 +568,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                           children: <Widget>[
                             Row(
                               children: <Widget> [
-                                Text('Storage Now:$quannum $quantype'),
+                                Text('Storage Now: $quannum $quantype'),
                                 //Text(quantype),
                               ],
                             ),
@@ -506,7 +579,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                             ),
                             Row(
                               children: <Widget> [
-                                Text('Expires in: $expitime')
+                                Text('Expires in: $remainDays')
                               ]
                             ),
                           ],
@@ -532,8 +605,8 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
     return new Row(children: strings.map((item) => new Text(item)).toList());
   }
   /// opens add new item screen
-  Future<void> pushAddItemScreen() async{
-    String date = dateToday.toString().substring(0, 10);
+  void pushAddItemScreen() {
+    //String date = dateToday.toString().substring(0, 10);
     Color color = Theme.of(context).primaryColor;
     const double padding = 15;
 
@@ -546,26 +619,154 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                 appBar: AppBar(
                   title: Text('Add an item'),
                 ),
-
-                body: Column(children: <Widget> [
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: padding),
-                    child:
+                body: ListView(
+                  children: <Widget>[
                     TextField(
-                      style: TextStyle(
-                        fontFamily: 'Roboto',
-                        fontSize: 24,
-                      ),
                       autofocus: true,
-                      //focusNode: focusNode1,
+                      textAlign: TextAlign.center,
                       decoration: InputDecoration(
-                          contentPadding: EdgeInsets.all(16),
-                          labelStyle: TextStyle(fontWeight: FontWeight.w300),
-                          hintText: "Food Name",
+                        hintText: 'e.g. Eggs',
+                        hintStyle: TextStyle(fontWeight: FontWeight.w300),
+                        border: UnderlineInputBorder(),
                       ),
                       controller: nameController,
-                      onSubmitted: (value) {},
-                    )
+                      onSubmitted:(value){},
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Text(
+                          "Select an expiration date",
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+
+                            //需要添加只能選擇一個的判斷
+                            _buildButtonColumn1(color, 3),
+                            _buildButtonColumn1(color, 4),
+                          ],
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildButtonColumn2(context, color, 'No date'),
+                            DataPicker(expiredate: food[3],),
+                            //food[3] = DataPicker().expiredate,
+                          ],
+                        ),
+                        ],
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Text(
+                          "Detail",
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            //quantity number + quantity type
+                            _buildButtonColumn2(context, color, 'quantity number'),
+                            _buildButtonColumn2(context, color, 'quantity type'),
+                          ],
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            //category
+                            _buildButtonColumn3(context, color),
+                            //food[1] = BodyWidget().category,
+
+                            _buildButtonColumn2(context, color, timeNowDate.toString().substring(0,10)),
+                          ],
+                        )
+                      ],
+                    ),
+                  ],
+                ),
+            floatingActionButton: FloatingActionButton(
+              //backgroundColor: const Color(0xff03dac6),
+              //foregroundColor: Colors.black,
+              onPressed: ()  async {
+                // Respond to button press  -----> write in database
+                //convert string to int
+                      try{
+                          //用戶不需要輸入購買時間，直接默認為用戶第一次添加事物的當前時間
+                        // var boughttime = timeNow;
+                          //food[1] = Category
+                          food[0] = nameController.text;
+                          food[1] = BodyWidget().category;
+                          food[2] = timeNow;
+                          //food[3] = DataPicker().expiredate;
+                          food[4] = '';
+                          food[5] = QuantityNumber().quantityNum;
+                          food[6] = 0.0;
+                          food[7] = 'good';
+                          //var quantityNum = int.parse(quanNumController.text);
+
+                          //接上InputPage裏DateTime時間組件，再轉化成timestamp存進數據庫
+                          //var expiretime = int.parse(expireTimeController.text);
+
+                        //food[3]是可以直接傳入數據庫的int timestamp
+                        DateTime ExpireDays = DateTime.fromMillisecondsSinceEpoch(food[3]);
+                        var remainExpireDays = ExpireDays.difference(timeNowDate).inDays;
+                        addItemExpi(remainExpireDays);
+                        addItemName(food[0]);
+                        print(food);
+
+                        //Calculate the current state of the new food
+                        //well actually i should assume the state of a new food should always be good, unless the user is an idiot
+                        //But i'm going to do the calculation anyway
+
+                        //insert new data into database
+                        insertDB(food);
+                        print(dbhelper.queryAll('foods'));
+
+                        //user positive value add 1
+                        var user1 = await dbhelper.queryAll('users');
+                        updateUserValue('positive');
+                          String check = checkIfPrimaryStateChanged(user1[0].positive-user1[0].negative);
+                          if (check!='None'){
+                            showAchievementDialog(check);
+                          }
+
+                        } on FormatException{
+                          print('Format Error!');
+                        }
+
+                        // close route
+                        // when push is used, it pushes new item on stack of navigator
+                        // simply pop off stack and it goes back
+                        Navigator.pop(context);
+
+              },
+                  tooltip: 'Add food',
+                  child: const Icon(Icons.add),
+            ),
+          );
+        }
+        )
+    );
+  }
+  /*
+            body: Column(children: <Widget> [
+               TextField(
+                  autofocus: false,
+                  //focusNode: focusNode1,
+                  decoration: InputDecoration(
+                      hintText: 'e.g. Eggs',
+                      contentPadding: EdgeInsets.all(16),
+                      labelText: "Food Name",
+                      prefixIcon: Icon(Icons.food_bank)
                   ),
                   Padding(
                       padding: EdgeInsets.symmetric(horizontal: padding),
@@ -617,18 +818,6 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                   autofocus: true,
                   //focusNode: focusNode2,
                   decoration: InputDecoration(
-                      hintText: 'You bought it on...',
-                      contentPadding: EdgeInsets.all(16),
-                      labelText: "Bought Date",
-                      prefixIcon: Icon(Icons.food_bank)
-                  ),
-                  controller: boughtTimeController,
-                  obscureText: true
-                ),
-                TextField(
-                  autofocus: true,
-                  //focusNode: focusNode2,
-                  decoration: InputDecoration(
                       hintText: 'add remaining expire time',
                       contentPadding: EdgeInsets.all(16),
                       labelText: "Expire On",
@@ -660,7 +849,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                   ),
                   controller: quanTypeController,
                   obscureText: true
-                ),
+                )
                 FloatingActionButton(
                   //When the user press this button, add user inputs into the database 
                   //and add to the previous ListView
@@ -668,13 +857,18 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
 
                     //convert string to int
                     try{
-                      var boughttime = int.parse(boughtTimeController.text);
+                      //用戶不需要輸入購買時間，直接默認為用戶第一次添加事物的當前時間
+                      var boughttime = timeNow;
                       var quantityNum = int.parse(quanNumController.text);
+
+                      //接上InputPage裏DateTime時間組件，再轉化成timestamp存進數據庫
                       var expiretime = int.parse(expireTimeController.text);
 
                       //add item name and expiretime to show in the ListView
                     //and then
-                    addItemExpi(expiretime);
+                    DateTime ExpireDays = DateTime.fromMillisecondsSinceEpoch(expiretime);
+                    var remainExpireDays = ExpireDays.difference(timeNowDate).inDays;
+                    addItemExpi(remainExpireDays);
                     addItemName(nameController.text);
 
                     //Calculate the current state of the new food
@@ -707,12 +901,14 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                   child: const Icon(Icons.add),
                 ),
                 ],
-                )       
+
+                )
               );          
             }
         )
     );
   }
+*/
 
   String checkIfPrimaryStateChanged(int value){
     if (value==2){
@@ -748,6 +944,9 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   ElevatedButton _buildButtonColumn1(Color color, int value) {
     return ElevatedButton.icon(
         onPressed: () {
+          //record new expire time ----> value
+          var later = timeNowDate.add(Duration(days: value));
+          food[3] = later.millisecondsSinceEpoch;
 
         },
         icon: Icon(Icons.calendar_today, size: 18),
@@ -760,13 +959,12 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   }
 
   // button list for category(show category list)
-  ElevatedButton _buildButtonColumn2(
-      BuildContext context, Color color, String lable) {
+  ElevatedButton _buildButtonColumn2(BuildContext context, Color color, String lable) {
     return ElevatedButton.icon(
         onPressed: () => showDialog<String>(
           context: context,
           builder: (BuildContext context) => AlertDialog(
-            title: Text('Category List'),
+            title: Text('Quantity Number'),
             content: QuantityNumber(),
           ),
         ),
@@ -777,6 +975,27 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                 RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20.0),
                     side: BorderSide(color: Colors.white)))));
+  }
+  ElevatedButton _buildButtonColumn3(BuildContext context, Color color) {
+    return ElevatedButton.icon(
+
+        onPressed: () => showDialog<String>(
+              context: context,
+              builder: (BuildContext context) => AlertDialog(
+                title: Text('Category List'),
+                content: BodyWidget(),
+
+              ),
+            ),
+
+        icon: Icon(Icons.calendar_today, size: 18),
+        label: Text('category'),
+        style: ButtonStyle(
+            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20.0),
+                    side: BorderSide(color: Colors.white))))
+    );
   }
 
   /// opens edit item screen
