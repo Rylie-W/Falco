@@ -419,7 +419,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
         // component is not dragged.
         child: ListTile(
           contentPadding:
-          EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+            EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
           leading: Container(
             padding: EdgeInsets.only(right: 12.0),
             decoration: new BoxDecoration(
@@ -428,50 +428,6 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
             child: Icon(Icons.fastfood),
           ),
           title: Text(text, style: TextStyle( fontSize: 25), ),
-<<<<<<< HEAD
-          subtitle: Text("Expired in $expire days", style: TextStyle(fontStyle: FontStyle.italic),),
-          trailing: FittedBox(
-            fit: BoxFit.fill,
-            child: Column( 
-              children: <Widget>[
-                Row (
-                  children: <Widget>[
-                    IconButton(
-                      icon: Icon(Icons.delete),
-                      onPressed: () {
-                        //User click to mean he has wasted the correspoding food in database
-                        //remove it from the ListView ------------> how?????????
-                        //edit the state to 'wasted' and consumestate stays the same, and user negative data adds 1
-                      print('##################################$text#############$index######################');
-                      updateFoodState(index, text, 'wasted');
-                      updateUserValue('negative');
-                      //buildList();
-                      },
-                    ),
-                    Text('wasted'),
-                  ],
-                ),
-                Row(
-                  children: <Widget>[
-
-                    IconButton(
-                      icon: Icon(Icons.backpack),
-                      onPressed: () {
-                        //User click to mean consume the correspoding food in database
-                        //remove it from the ListView ------------> how?????????
-                        //edit the state to 'consumed' and consumestate to 1, and user positive data adds 1
-                      print('##################################$text#############$index######################');
-                      updateFoodState(index, text, 'consumed');
-                      updateUserValue('positive');
-                      //buildList();
-                      },
-                    ),
-                    Text("consumed")
-                  ],
-                ),
-              ],
-            ),
-=======
           subtitle: Row(
             children: <Widget>[
               Expanded(
@@ -491,13 +447,51 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                         style: TextStyle(color: Colors.orange))),
               )
             ],
->>>>>>> 58da590dddd4ae09beeeb64fd7670315002f010f
           ),
-          // subtitle: Text("Expired in $expire days", style: TextStyle(fontStyle: FontStyle.italic),),
-          trailing: Text("2" + " " + "Stück", style: TextStyle(
-            fontFamily: 'Roboto',
-            fontSize: 24,
-          )),
+          trailing:
+            FittedBox(
+              fit: BoxFit.fill,
+              child: Column( 
+                children: <Widget>[
+                  Row (
+                    children: <Widget>[
+                      IconButton(
+                        icon: Icon(Icons.delete),
+                        onPressed: () {
+                          //User click to mean he has wasted the correspoding food in database
+                          //remove it from the ListView ------------> how?????????
+                          //edit the state to 'wasted' and consumestate stays the same, and user negative data adds 1
+                        print('##################################$text#############$index######################');
+                        updateFoodState(index, text, 'wasted');
+                        updateUserValue('negative');
+                        //buildList();
+                        },
+                      ),
+                      Text('wasted'),
+                    ],
+                  ),
+                  Row(
+                    children: <Widget>[
+
+                      IconButton(
+                        icon: Icon(Icons.backpack),
+                        onPressed: () {
+                          //User click to mean consume the correspoding food in database
+                          //remove it from the ListView ------------> how?????????
+                          //edit the state to 'consumed' and consumestate to 1, and user positive data adds 1
+                        print('##################################$text#############$index######################');
+                        updateFoodState(index, text, 'consumed');
+                        updateUserValue('positive');
+                        //buildList();
+                        },
+                      ),
+                      Text("consumed")
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          // subtitle: Text("Expired in $expire days", style: TextStyle(fontStyle: FontStyle.italic),),         
           onTap: () {
             //edit one specific card ---------直接跳去詳情頁面吧
             //txt.value = new TextEditingController.fromValue(new TextEditingValue(text: items[index])).value;
@@ -581,15 +575,10 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
               },
             ));
   }
-<<<<<<< HEAD
-
-
-=======
   Widget getTextWidgets(List<String> strings)
   {
     return new Row(children: strings.map((item) => new Text(item)).toList());
   }
->>>>>>> 58da590dddd4ae09beeeb64fd7670315002f010f
   /// opens add new item screen
   void pushAddItemScreen() {
     //String date = dateToday.toString().substring(0, 10);
@@ -605,7 +594,6 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                 appBar: AppBar(
                   title: Text('Add an item'),
                 ),
-<<<<<<< HEAD
                 body: ListView(
                   children: <Widget>[
                     TextField(
@@ -750,28 +738,6 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                       contentPadding: EdgeInsets.all(16),
                       labelText: "Food Name",
                       prefixIcon: Icon(Icons.food_bank)
-=======
-
-                body: Column(children: <Widget> [
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: padding),
-                    child:
-                    TextField(
-                      style: TextStyle(
-                        fontFamily: 'Roboto',
-                        fontSize: 24,
-                      ),
-                      autofocus: true,
-                      //focusNode: focusNode1,
-                      decoration: InputDecoration(
-                          contentPadding: EdgeInsets.all(16),
-                          labelStyle: TextStyle(fontWeight: FontWeight.w300),
-                          hintText: "Food Name",
-                      ),
-                      controller: nameController,
-                      onSubmitted: (value) {},
-                    )
->>>>>>> 58da590dddd4ae09beeeb64fd7670315002f010f
                   ),
                   Padding(
                       padding: EdgeInsets.symmetric(horizontal: padding),
