@@ -370,12 +370,7 @@ class Achievements extends StatelessWidget{
 
   Future<String> getPrimaryState() async{
     List userValues = await dbHelper.queryAll("users");
-<<<<<<< HEAD:lib/components/achievements.dart
-    String primaryState=userValues[0]['primarystate'];
-=======
     String primaryState = userValues[0].primarystate;
-    //String primaryState=userValues.last['primarystate'];
->>>>>>> origin:lib/Pages/AchievementPage.dart
     return primaryState;
   }
 

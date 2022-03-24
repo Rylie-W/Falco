@@ -12,7 +12,6 @@ import 'dialog.dart';
 import 'package:less_waste/Helper/DB_Helper.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'dart:convert';
-import 'achievements.dart';
 import 'datePicker.dart';
 import 'dart:async';
 
