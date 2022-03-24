@@ -41,6 +41,7 @@ dependencies:
   #anime dependence
   rive: ^0.8.4
   fancy_bottom_navigation: ^0.3.3
+  flutter_slidable: ^1.2.0
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -88,6 +89,7 @@ flutter:
     - assets/achievements/mystery.png
     - assets/anime/female.riv
     - assets/anime/male.riv
+    - assets/images/kasseBon.jpg
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

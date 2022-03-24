@@ -1,5 +1,7 @@
 import 'dart:ffi';
 
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:less_waste/components/quantityDialog.dart';
@@ -7,6 +9,7 @@ import 'package:less_waste/components/quantityDialog.dart';
 import '../Pages/InputPage.dart';
 import 'dialog.dart';
 import 'package:less_waste/Helper/DB_Helper.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'dart:convert';
 import 'datePicker.dart';
 
@@ -357,8 +360,75 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
         borderRadius: BorderRadius.circular(10),
       ),
       margin: EdgeInsets.all(10),
+      child:
+      Slidable(
+        key: const ValueKey(0),
+        startActionPane: ActionPane(
+          // A motion is a widget used to control how the pane animates.
+          motion: const ScrollMotion(),
+
+          // A pane can dismiss the Slidable.
+          dismissible: DismissiblePane(onDismissed: () {
+            setState(() {
+              items.removeAt(index);
+            });
+          }),
+
+          // All actions are defined in the children parameter.
+          children: [
+            // A SlidableAction can have an icon and/or a label.
+            SlidableAction(
+              onPressed: (BuildContext context) {
+                updateFoodState(index, text, 'wasted');
+                updateUserValue('negative');
+              },
+              backgroundColor: Color(0xFFFE4A49),
+              foregroundColor: Colors.white,
+              icon: Icons.delete,
+              label: 'Wasted',
+            ),
+          ],
+        ),
+
+        // The end action pane is the one at the right or the bottom side.
+        endActionPane: ActionPane(
+          motion: ScrollMotion(),
+          dismissible: DismissiblePane(onDismissed: () {
+            setState(() {
+              items.removeAt(index);
+            });
+          }),
+          children: [
+            SlidableAction(
+              // An action can be bigger than the others.
+              flex: 2,
+              onPressed: (BuildContext context) {
+                updateFoodState(index, text, 'consumed');
+                updateUserValue('positive');
+                buildList();
+              },
+              backgroundColor: Color(0xFF7BC043),
+              foregroundColor: Colors.white,
+              icon: Icons.archive,
+              label: 'Comsumed',
+            ),
+          ],
+        ),
+
+        // The child of the Slidable is what the user sees when the
+        // component is not dragged.
         child: ListTile(
+          contentPadding:
+          EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+          leading: Container(
+            padding: EdgeInsets.only(right: 12.0),
+            decoration: new BoxDecoration(
+                border: new Border(
+                    right: new BorderSide(width: 1.0, color: Colors.grey))),
+            child: Icon(Icons.fastfood),
+          ),
           title: Text(text, style: TextStyle( fontSize: 25), ),
+<<<<<<< HEAD
           subtitle: Text("Expired in $expire days", style: TextStyle(fontStyle: FontStyle.italic),),
           trailing: FittedBox(
             fit: BoxFit.fill,
@@ -401,7 +471,33 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                 ),
               ],
             ),
+=======
+          subtitle: Row(
+            children: <Widget>[
+              Expanded(
+                  flex: 1,
+                  child: Container(
+                    child: LinearProgressIndicator(
+                        backgroundColor: Color.fromRGBO(209, 224, 224, 0.2),
+                        value: 0.44,
+                        valueColor: AlwaysStoppedAnimation(Colors.green)),
+                  )
+              ),
+              Expanded(
+                flex: 4,
+                child: Padding(
+                    padding: EdgeInsets.only(left: 10.0),
+                    child: Text("$expire days left",
+                        style: TextStyle(color: Colors.orange))),
+              )
+            ],
+>>>>>>> 58da590dddd4ae09beeeb64fd7670315002f010f
           ),
+          // subtitle: Text("Expired in $expire days", style: TextStyle(fontStyle: FontStyle.italic),),
+          trailing: Text("2" + " " + "Stück", style: TextStyle(
+            fontFamily: 'Roboto',
+            fontSize: 24,
+          )),
           onTap: () {
             //edit one specific card ---------直接跳去詳情頁面吧
             //txt.value = new TextEditingController.fromValue(new TextEditingValue(text: items[index])).value;
@@ -415,7 +511,9 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
             deleteItem(index);
             buildList();
           },
-        )
+        ),
+      ),
+
     );
   }
 
@@ -483,12 +581,23 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
               },
             ));
   }
+<<<<<<< HEAD
 
 
+=======
+  Widget getTextWidgets(List<String> strings)
+  {
+    return new Row(children: strings.map((item) => new Text(item)).toList());
+  }
+>>>>>>> 58da590dddd4ae09beeeb64fd7670315002f010f
   /// opens add new item screen
   void pushAddItemScreen() {
     //String date = dateToday.toString().substring(0, 10);
     Color color = Theme.of(context).primaryColor;
+    const double padding = 15;
+
+    final Category = ["Vegetable", "Meat", "Fruit", "Milk Product", "Milk"];
+    List<Widget> categortyList = new List<Widget>.generate(5, (index) => new Text(Category[index]));
     Navigator.of(context).push(
         MaterialPageRoute(
             builder: (context) {
@@ -496,6 +605,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                 appBar: AppBar(
                   title: Text('Add an item'),
                 ),
+<<<<<<< HEAD
                 body: ListView(
                   children: <Widget>[
                     TextField(
@@ -640,22 +750,75 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                       contentPadding: EdgeInsets.all(16),
                       labelText: "Food Name",
                       prefixIcon: Icon(Icons.food_bank)
+=======
+
+                body: Column(children: <Widget> [
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: padding),
+                    child:
+                    TextField(
+                      style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontSize: 24,
+                      ),
+                      autofocus: true,
+                      //focusNode: focusNode1,
+                      decoration: InputDecoration(
+                          contentPadding: EdgeInsets.all(16),
+                          labelStyle: TextStyle(fontWeight: FontWeight.w300),
+                          hintText: "Food Name",
+                      ),
+                      controller: nameController,
+                      onSubmitted: (value) {},
+                    )
+>>>>>>> 58da590dddd4ae09beeeb64fd7670315002f010f
                   ),
-                  controller: nameController,
-                  onSubmitted: (value) {},
-                ),
-                TextField(
-                  autofocus: true,
-                  //focusNode: focusNode2,
-                  decoration: InputDecoration(
-                      hintText: 'choose correspoding category...',
-                      contentPadding: EdgeInsets.all(16),
-                      labelText: "Category",
-                      prefixIcon: Icon(Icons.food_bank)
+                  Padding(
+                      padding: EdgeInsets.symmetric(horizontal: padding),
+                      child: TextField(
+                          style: TextStyle(
+                            fontFamily: 'Roboto',
+                            fontSize: 24,
+                          ),
+                          autofocus: false,
+                          onTap: () {
+                            FocusScope.of(context).requestFocus(new FocusNode());
+                            showCupertinoModalPopup(
+                                context: context,
+                                builder: (context) {
+                                  return Container(
+                                    height: 200,
+                                    color: Colors.grey,
+                                    child: Row(
+                                      children: [
+                                        Expanded(child: CupertinoPicker(
+                                            itemExtent: 32.0,
+                                            onSelectedItemChanged: (value) {
+                                              setState(() {
+                                                categoryController.text = Category[value];
+                                              });
+                                            },
+                                            children: categortyList
+                                        ),
+                                        )
+                                      ],
+                                    ),
+                                  );
+                                }
+                            );
+                          },
+                          //focusNode: focusNode2,
+                          decoration: InputDecoration(
+                              hintText: 'choose correspoding category...',
+                              contentPadding: EdgeInsets.all(16),
+                              labelText: "Category",
+                              prefixIcon: Icon(Icons.food_bank)
+                          ),
+                          controller: categoryController,
+                          obscureText: false
+                      ),
                   ),
-                  controller: categoryController,
-                  obscureText: true
-                ),
+
                 TextField(
                   autofocus: true,
                   //focusNode: focusNode2,
