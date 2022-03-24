@@ -66,7 +66,49 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   DBHelper dbhelper = DBHelper();
   List food = ['', '', -1, -1, '', -1, -1.0, ''];
 
-  
+  //check the primary state of uservalue should be updated or not; if so, update to the latest
+  Future<void> updatePrimaryState() async{
+    var user1 = await dbhelper.queryAll('users');
+    int value = user1[0].positive - user1[0].negative;
+    String primaryState;
+
+    if (value < 2){
+      primaryState='initialization';
+      await dbhelper.updateUserPrimary(primaryState);
+    }
+    if (value <= 6){
+      //judge the primary state
+      primaryState='encounter';
+      await dbhelper.updateUserPrimary(primaryState);
+    }
+    if(value > 6 && value <= 14){
+      primaryState='mate';
+      await dbhelper.updateUserPrimary(primaryState);
+    }
+    if(value > 14 && value <= 30){
+      primaryState='nest';
+      await dbhelper.updateUserPrimary(primaryState);
+    }
+    if(value > 30 && value <= 46){
+      primaryState='hatch';
+      await dbhelper.updateUserPrimary(primaryState);
+    }
+    if(value > 46 && value <= 78){
+      primaryState='learn';
+      await dbhelper.updateUserPrimary(primaryState);
+    }
+    else if(value > 78 && value <= 82){
+      primaryState='leavehome';
+      await dbhelper.updateUserPrimary(primaryState);
+    }
+    else if(value > 82 && value <= 91){
+      primaryState='snow owl';
+      await dbhelper.updateUserPrimary(primaryState);
+    }
+    else if(value > 91 && value <= 100){
+      primaryState='tawny owl';
+    }
+  }
   
   Future<void> insertItem() async{
        //Insert a new Food butter
@@ -198,50 +240,6 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
       if(expiretime[i] < timeNow){
         dbhelper.updateFoodWaste(i);
       }
-    }
-  }
-
-  //check the primary state of uservalue should be updated or not; if so, update to the latest
-  Future<void> updatePrimaryState() async{
-    var user1 = await dbhelper.queryAll('users');
-    int value = user1[0].positive - user1[0].negative;
-    String primaryState;
-
-    if (value < 2){
-      primaryState='initialization';
-      await dbhelper.updateUserPrimary(primaryState);
-    }
-    if (value <= 6){
-      //judge the primary state
-      primaryState='encounter';
-      await dbhelper.updateUserPrimary(primaryState);
-    }
-    if(value > 6 && value <= 14){
-      primaryState='mate';
-      await dbhelper.updateUserPrimary(primaryState);
-    }
-    if(value > 14 && value <= 30){
-      primaryState='nest';
-      await dbhelper.updateUserPrimary(primaryState);
-    }
-    if(value > 30 && value <= 46){
-      primaryState='hatch';
-      await dbhelper.updateUserPrimary(primaryState);
-    }
-    if(value > 46 && value <= 78){
-      primaryState='learn';
-      await dbhelper.updateUserPrimary(primaryState);
-    }
-    else if(value > 78 && value <= 82){
-      primaryState='leavehome';
-      await dbhelper.updateUserPrimary(primaryState);
-    }
-    else if(value > 82 && value <= 91){
-      primaryState='snow owl';
-      await dbhelper.updateUserPrimary(primaryState);
-    }
-    else if(value > 91 && value <= 100){
-      primaryState='tawny owl';
     }
   }
 
@@ -658,7 +656,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                             //food[3] = DataPicker().expiredate,
                           ],
                         ),
-                        ],
+                      ],
                     ),
                     Column(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -692,67 +690,63 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                     ),
                   ],
                 ),
-            floatingActionButton: FloatingActionButton(
-              //backgroundColor: const Color(0xff03dac6),
-              //foregroundColor: Colors.black,
-              onPressed: ()  async {
-                // Respond to button press  -----> write in database
-                //convert string to int
-                      try{
-                          //用戶不需要輸入購買時間，直接默認為用戶第一次添加事物的當前時間
-                        // var boughttime = timeNow;
-                          //food[1] = Category
-                          food[0] = nameController.text;
-                          food[1] = BodyWidget().category;
-                          food[2] = timeNow;
-                          //food[3] = DataPicker().expiredate;
-                          food[4] = '';
-                          food[5] = QuantityNumber().quantityNum;
-                          food[6] = 0.0;
-                          food[7] = 'good';
-                          //var quantityNum = int.parse(quanNumController.text);
+                floatingActionButton: FloatingActionButton(
+                  //backgroundColor: const Color(0xff03dac6),
+                  //foregroundColor: Colors.black,
+                  onPressed: () {
+                    // Respond to button press  -----> write in database
+                    //convert string to int
+                    try{
+                      //用戶不需要輸入購買時間，直接默認為用戶第一次添加事物的當前時間
+                      // var boughttime = timeNow;
+                      //food[1] = Category
+                      food[0] = nameController.text;
+                      food[1] = BodyWidget().category;
+                      food[2] = timeNow;
+                      //food[3] = DataPicker().expiredate;
+                      food[4] = '';
+                      food[5] = QuantityNumber().quantityNum;
+                      food[6] = 0.0;
+                      food[7] = 'good';
+                      //var quantityNum = int.parse(quanNumController.text);
 
-                          //接上InputPage裏DateTime時間組件，再轉化成timestamp存進數據庫
-                          //var expiretime = int.parse(expireTimeController.text);
+                      //接上InputPage裏DateTime時間組件，再轉化成timestamp存進數據庫
+                      //var expiretime = int.parse(expireTimeController.text);
 
-                        //food[3]是可以直接傳入數據庫的int timestamp
-                        DateTime ExpireDays = DateTime.fromMillisecondsSinceEpoch(food[3]);
-                        var remainExpireDays = ExpireDays.difference(timeNowDate).inDays;
-                        addItemExpi(remainExpireDays);
-                        addItemName(food[0]);
-                        print(food);
+                      //food[3]是可以直接傳入數據庫的int timestamp
+                      DateTime ExpireDays = DateTime.fromMillisecondsSinceEpoch(food[3]);
+                      var remainExpireDays = ExpireDays.difference(timeNowDate).inDays;
+                      addItemExpi(remainExpireDays);
+                      addItemName(food[0]);
+                      print(food);
 
-                        //Calculate the current state of the new food
-                        //well actually i should assume the state of a new food should always be good, unless the user is an idiot
-                        //But i'm going to do the calculation anyway
+                      //Calculate the current state of the new food
+                      //well actually i should assume the state of a new food should always be good, unless the user is an idiot
+                      //But i'm going to do the calculation anyway
 
-                        //insert new data into database
-                        insertDB(food);
-                        print(dbhelper.queryAll('foods'));
+                      //insert new data into database
+                      insertDB(food);
+                      print(dbhelper.queryAll('foods'));
 
-                        //user positive value add 1
-                        var user1 = await dbhelper.queryAll('users');
-                        updateUserValue('positive');
-                          String check = checkIfPrimaryStateChanged(user1[0].positive-user1[0].negative);
-                          if (check!='None'){
-                            showAchievementDialog(check);
-                          }
+                      //user positive value add 1
+                      //var user1 = dbhelper.queryAll('users');
+                      updateUserValue('positive');
 
-                        } on FormatException{
-                          print('Format Error!');
-                        }
+                    } on FormatException{
+                      print('Format Error!');
+                    }
 
-                        // close route
-                        // when push is used, it pushes new item on stack of navigator
-                        // simply pop off stack and it goes back
-                        Navigator.pop(context);
+                    // close route
+                    // when push is used, it pushes new item on stack of navigator
+                    // simply pop off stack and it goes back
+                    Navigator.pop(context);
 
-              },
+                  },
                   tooltip: 'Add food',
                   child: const Icon(Icons.add),
-            ),
-          );
-        }
+                ),
+              );
+            }
         )
     );
   }
@@ -908,36 +902,6 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
     );
   }
 */
-
-  String checkIfPrimaryStateChanged(int value){
-    if (value==2){
-      return Achievements.achievementNameList[1];
-    }
-    else if (value==7){
-      return Achievements.achievementNameList[2];
-    }
-    else if (value==15){
-      return Achievements.achievementNameList[3];
-    }
-    else if (value==31){
-      return Achievements.achievementNameList[4];
-    }
-    else if (value==47){
-      return Achievements.achievementNameList[5];
-    }
-    else if (value==79){
-      return Achievements.achievementNameList[6];
-    }
-    else if (value==83){
-      return Achievements.achievementNameList[7];
-    }
-    else if (value==92){
-      return Achievements.achievementNameList[8];
-    }
-    else{
-      return "None";
-    }
-  }
 
   // button list for expiring date (only button)
   ElevatedButton _buildButtonColumn1(Color color, int value) {
@@ -1106,40 +1070,5 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
         ),
       ),
     );
-  }
-
-  showAchievementDialog(String state){
-    double width= MediaQuery.of(context).size.width;
-    double height= MediaQuery.of(context).size.height;
-    int stateIndex= Achievements.stateMap[state]??-1;
-    AlertDialog dialog = AlertDialog(
-      title: const Text("Congratulations!"),
-      content:
-      new Container(
-        width: 3*width/5,
-        height: height/3,
-        padding: const EdgeInsets.all(10.0),
-        child:
-        new Column(
-          children: [
-            Expanded(child: stateIndex>-1? Image.asset(Achievements.imageList[stateIndex]):Image.asset(Achievements.imageList[12])),
-            Text(
-                stateIndex>-1?"You have made the achievement "+Achievements.achievementNameList[stateIndex]:"Something goes wrong. We are fixing it.",
-                textAlign: TextAlign.center,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontWeight: FontWeight.bold))
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, 'OK'),
-          child: const Text('OK'),
-        ),
-      ],
-    );
-    showDialog(context: context, builder: (BuildContext context){
-      return dialog;
-    });
   }
 }
