@@ -48,7 +48,7 @@ class _FrameState extends State<Frame> {
     var user1 = UserValue(name: "user1",
         negative: 0,
         positive: 0,
-        primarystate: "initial",
+        primarystate: "initialization",
         secondarystate: "satisfied",
         secondaryevent: "single",
         thirdstate: "move",

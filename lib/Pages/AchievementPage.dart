@@ -63,28 +63,38 @@ class Achievements extends StatelessWidget{
     ]
   );
 
+  Future<int> getIntSate() async{
+    String primaryState = await getPrimaryState();
+    return stateMap[primaryState]??0;
+  }
+
   @override
   Widget build(BuildContext context){
     this.width = MediaQuery.of(context).size.width;
     this.height = MediaQuery.of(context).size.height;
-    int state=stateMap[getPrimaryState()]??0;
-    // int state=6;
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('My Achievements'),
-      ),
-      body: SingleChildScrollView(
-        child:
-          new Column(
-            children: <Widget>[
-              getFirstThreeAchievements(state),
-              getRemainingAchievements(state)
-            ],
+    return FutureBuilder(
+      future: getIntSate(),
+      builder: (BuildContext context, AsyncSnapshot<int> state){
+        if (!state.hasData) return const Text('Loading...');
+        if (state.hasError) return const Text('Something went wrong.');
+
+        return Scaffold(
+          backgroundColor: Colors.white,
+          appBar: AppBar(
+            title: const Text('My Achievements'),
           ),
-      ),
-    );
+          body: SingleChildScrollView(
+            child:
+            new Column(
+              children: <Widget>[
+                getFirstThreeAchievements(state.requireData),
+                getRemainingAchievements(state.requireData)
+              ],
+            ),
+          ),
+        );
+      });
   }
   
   Widget getRemainingAchievements(int state){
@@ -257,7 +267,7 @@ class Achievements extends StatelessWidget{
     );
   }
   
-  Widget getFirstThreeAchievements(int state){
+  Widget getFirstThreeAchievements (int state){
     if (state > 0) {
       return  new Row(children: <Widget>[
           new Container(
