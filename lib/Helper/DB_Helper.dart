@@ -31,7 +31,7 @@ class DBHelper{
 
   return openDatabase(path,version: 1,onCreate: (Database db,int newerVersion) async{
       await db.execute('CREATE TABLE users(name TEXT PRIMARY KEY, positive INTEGER, negative INTEGER, primarystate TEXT, secondarystate TEXT, secondaryevent TEXT, thirdstate TEXT, state TEXT, species TEXT, childrennum INTEGER, fatherstate TEXT, motherstate TEXT, time INTEGER)', );
-      await db.execute('CREATE TABLE foods(id INTEGER PRIMARY KEY, name TEXT, category TEXT, boughttime INTEGER, expiretime INTEGER, quantitytype TEXT, quantitynum INTEGER, state TEXT, consumestate REAL)');  
+      await db.execute('CREATE TABLE foods(name TEXT PRIMARY KEY, category TEXT, boughttime INTEGER, expiretime INTEGER, quantitytype TEXT, quantitynum INTEGER, state TEXT, consumestate REAL)');  
     });
   }
 
@@ -66,6 +66,22 @@ class DBHelper{
   
     Database dbHelper = await db; 
 
+    //var maxId = await dbHelper.rawQuery('SELECT max(id) fROM foods');
+
+    //Convert the List<Map<String, dynamic> into a String
+    //var maxID = maxId[0]['max(id)'];
+    //print('##########################MaxID = $maxId###############################');
+    //print('##########################Food.ID = ${food.id}###############################');
+
+    //if(maxID == null){
+     //   maxID = -1;
+    //}
+
+   // if(food.id <= maxID ){
+      //food.id = maxID + 1;
+      //print('##########################food.id = ${food.id}###############################');
+    //}
+
     //Insert the Food into the correct table. Also specify the 
     //'conflictAlgorithm' to use in case the same food is inserted
     //twice.
@@ -75,8 +91,10 @@ class DBHelper{
     await dbHelper.insert(
       'foods', 
       food.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace
       );
   }
+   
 
   //Define the function that inserts user into the 'users' table
   Future<void> insertUser(UserValue uservalue) async{
@@ -91,9 +109,11 @@ class DBHelper{
     await dbHelper.insert(
       'users', 
       uservalue.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
+      conflictAlgorithm: ConflictAlgorithm.ignore,
       );
   }
+
+
 
   //Define method that retrieves all the foods from food table
   Future<List> queryAll(String object) async {
@@ -106,7 +126,7 @@ class DBHelper{
 
       return List.generate(maps.length, (i) {
         return Food(
-          id: maps[i]['id'],
+         //id: maps[i]['id'],
           name: maps[i]['name'],
           category: maps[i]['category'],
           boughttime: maps[i]['boughttime'],
@@ -155,7 +175,7 @@ class DBHelper{
       //shoud be only one row, how to simplfy the code?
       return List.generate(maps.length,(i) {
         return Food(
-          id: maps[0]['id'],
+          //id: maps[0]['id'],
           name: maps[0]['name'],
           category: maps[0]['category'],
           boughttime: maps[0]['boughttime'],
@@ -220,12 +240,12 @@ class DBHelper{
 
   }
 
-  Future<String> getOneFoodValue(int id, String value)async{
+  Future<String> getOneFoodValue(String name, String value)async{
     //Get a reference to the database.
     Database dbHelper = await db; 
     //Query table for all the foods.
    
-    final List<Map<String, dynamic>> maps = await dbHelper.query('foods', columns: [value], where: '"id" = ?', whereArgs: [id]);
+    final List<Map<String, dynamic>> maps = await dbHelper.query('foods', columns: [value], where: '"name" = ?', whereArgs: [name]);
 
     //Convert the List<Map<String, dynamic> into a String
     var foodname = maps[0][value];
@@ -233,12 +253,12 @@ class DBHelper{
 
     return foodname;
   }
-   Future<int> getOneFoodIntValue(int id, String value)async{
+   Future<int> getOneFoodIntValue(String name, String value)async{
     //Get a reference to the database.
     Database dbHelper = await db; 
     //Query table for all the foods.
    
-    final List<Map<String, dynamic>> maps = await dbHelper.query('foods', columns: [value], where: '"id" = ?', whereArgs: [id]);
+    final List<Map<String, dynamic>> maps = await dbHelper.query('foods', columns: [value], where: '"name" = ?', whereArgs: [name]);
 
     //Convert the List<Map<int, dynamic> into a String
     var foodname = maps[0][value];
@@ -246,12 +266,12 @@ class DBHelper{
 
     return foodname;
   }
-  Future<double> getOneFoodDoubleValue(int id, String value)async{
+  Future<double> getOneFoodDoubleValue(String name, String value)async{
     //Get a reference to the database.
     Database dbHelper = await db; 
     //Query table for all the foods.
    
-    final List<Map<String, dynamic>> maps = await dbHelper.query('foods', columns: [value], where: '"id" = ?', whereArgs: [id]);
+    final List<Map<String, dynamic>> maps = await dbHelper.query('foods', columns: [value], where: '"name" = ?', whereArgs: [name]);
 
     //Convert the List<Map<int, dynamic> into a String
     var foodname = maps[0][value];
@@ -259,6 +279,8 @@ class DBHelper{
 
     return foodname;
   }
+
+  //NNNNOOOOOOOO NEED!!!!!!
   Future<int> getMaxId()async{
     //Get a reference to the database.
     Database dbHelper = await db; 
@@ -288,7 +310,7 @@ class DBHelper{
 
       return List.generate(maps.length, (i) {
         return Food(
-          id: maps[i]['id'],
+          //id: maps[i]['id'],
           name: maps[i]['name'],
           category: maps[i]['category'],
           boughttime: maps[i]['boughttime'],
@@ -342,7 +364,7 @@ class DBHelper{
 
       return List.generate(maps.length, (i) {
         return Food(
-          id: maps[i]['id'],
+          //id: maps[i]['id'],
           name: maps[i]['name'],
           category: maps[i]['category'],
           boughttime: maps[i]['boughttime'],
@@ -366,9 +388,6 @@ class DBHelper{
       'foods',
       food.toMap(),
       //Ensure the food has a matching id
-      where: 'id = ?',
-      //Pass the Food's id as a whereArg to prevent SQL injection
-      whereArgs: [food.id]
       );
   }
 
@@ -387,15 +406,15 @@ class DBHelper{
       whereArgs: [uservalue.name]
       );
   }
-  Future<void> updateFoodWaste(int id) async{
+  Future<void> updateFoodWaste(String name) async{
     Database dbHelper = await db;
 
-    await dbHelper.rawUpdate('UPDATE foods SET consumestate = ?, state = ? WHERE id = ?',[1.0, 'wasted', id]);
+    await dbHelper.rawUpdate('UPDATE foods SET consumestate = ?, state = ? WHERE name = ?',[1.0, 'wasted', name]);
   }
-  Future<void> updateFoodConsumed(int id) async{
+  Future<void> updateFoodConsumed(String name) async{
     Database dbHelper = await db;
 
-    await dbHelper.rawUpdate('UPDATE foods SET quantitynum = ?, consumestate = ?, state = ? WHERE id = ?',[0, 1.0, 'consumed', id]);
+    await dbHelper.rawUpdate('UPDATE foods SET quantitynum = ?, consumestate = ?, state = ? WHERE name = ?',[0, 1.0, 'consumed', name]);
   }
 
     //Define method that updates user data 
@@ -407,7 +426,7 @@ class DBHelper{
   }
 
   //Define method to delete food
-  Future<void> deleteFood(int id) async {
+  Future<void> deleteFood(String name) async {
     //Get a reference to the database
     Database dbHelper = await db;
 
@@ -415,9 +434,8 @@ class DBHelper{
     await dbHelper.delete(
       'foods',
       //Use a 'where' clause to delete a specific food -> id or name?
-      where: 'id = ?',
-      //Pass the Food's id as a whereArg to preveny SQL injection
-      whereArgs: [id],
+      where: 'name = ?',
+      whereArgs: [name],
     );
   }
 
@@ -450,8 +468,8 @@ class DBHelper{
     DBHelper dbhelper = DBHelper();
 
     //Insert a new Food butter
-    var butter = Food(id: 2, name: 'milk', category: 'MilkProduct', boughttime: 154893, expiretime: 156432, quantitytype: 'pieces', quantitynum: 3, consumestate: 0.50, state: 'good');   
-    var egg = Food(id: 3, name: 'beaf', category: 'Meat', boughttime: 134554, expiretime: 1654757, quantitytype: 'number', quantitynum: 4, consumestate: 0, state: 'good');
+    var butter = Food( name: 'milk', category: 'MilkProduct', boughttime: 154893, expiretime: 156432, quantitytype: 'pieces', quantitynum: 3, consumestate: 0.50, state: 'good');   
+    var egg = Food( name: 'beaf', category: 'Meat', boughttime: 134554, expiretime: 1654757, quantitytype: 'number', quantitynum: 4, consumestate: 0, state: 'good');
     dbhelper.insertFood(butter);
     dbhelper.insertFood(egg);
     
@@ -496,7 +514,7 @@ class DBHelper{
 }
 
 class Food {
-  int id;
+  //int id;
   String name;
   String category;
   int boughttime;
@@ -507,7 +525,7 @@ class Food {
   double consumestate;
 
   Food({
-    required this.id,
+    //required this.id,
     required this.name,
     required this.category,
     required this.boughttime,
@@ -536,7 +554,7 @@ class Food {
   //of the columns in the databse.
   Map<String, dynamic> toMap(){
     return {
-      'id': id,
+      //'id': id,
       'name': name,
       'category': category,
       'boughttime': boughttime,
@@ -552,7 +570,7 @@ class Food {
   //each food when using the print statement
   @override
     String toString() {
-      return 'Food{id: $id, name: $name, category: $category, boughttime: $boughttime, expiretime: $expiretime, quantitytype: $quantitytype, quantitynum: $quantitynum, state: $state, consumestate: $consumestate}';
+      return 'Food{name: $name, category: $category, boughttime: $boughttime, expiretime: $expiretime, quantitytype: $quantitytype, quantitynum: $quantitynum, state: $state, consumestate: $consumestate}';
     
     }
 }

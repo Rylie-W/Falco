@@ -23,7 +23,7 @@ class _FrameState extends State<Frame> {
   
   Future<void> insertItem() async {
     //Insert a new Food butter
-    var butter = Food(id: 0,
+    var butter = Food(
         name: 'butter',
         category: 'MilkProduct',
         boughttime: timeNow,
@@ -33,7 +33,7 @@ class _FrameState extends State<Frame> {
         consumestate: 0.50,
         state: 'good');
     await dbhelper.insertFood(butter);
-    var egg = Food(id: 1,
+    var egg = Food(
         name: 'eggs',
         category: 'Meat',
         boughttime: timeNow,
