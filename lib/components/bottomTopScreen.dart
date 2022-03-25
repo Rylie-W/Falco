@@ -270,7 +270,15 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
 
   }
 
+  Future<String> checkIfPrimaryStateChanged() async {
+    var user1 = await dbhelper.queryAll('users');
+
+    return user1[0].primarystate;
+
+  }
+
   var txt = TextEditingController();
+  
 
   @override
   Widget build(BuildContext context) {
@@ -742,8 +750,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                         //var user1 = dbhelper.queryAll('users');
                         updateUserValue('positive');
 
-                      
-
+                 
                         } on FormatException{
                           print('Format Error!');
                         }
