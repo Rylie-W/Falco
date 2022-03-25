@@ -244,7 +244,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
     }
   }
 
-  //edit the state to 'consumed' and consumestate to 1, and user positive data adds 1
+    //edit the state to 'consumed' and consumestate to 1, and user positive data adds 1
   //the arugument should be 'positive'(which means positive + 1) or 'negative'(which means negative + 1)
   Future<void> updateUserValue(String state) async{
     var user1 = await dbhelper.queryAll('users');
@@ -252,15 +252,13 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
     print('================= user =================');
     print(user1);
   
-
     if(state == 'positive'){
       //judge the primary state
       var uservalue = UserValue(name: user1[0].name, negative: user1[0].negative, positive: user1[0].positive + 1, primarystate: user1[0].primarystate, secondarystate: 'satisfied', secondaryevent: "single", thirdstate: "move", species: "folca", childrennum: 0, fatherstate: "single", motherstate: "single", time: timeNow);    
       await dbhelper.updateUser(uservalue);
       await updatePrimaryState();
       print(await dbhelper.queryAll("users"));
-
-      }
+    }
     else{
       var uservalue = UserValue(name: user1[0].name, negative: user1[0].negative + 1, positive: user1[0].positive, primarystate: user1[0].primarystate, secondarystate: 'satisfied', secondaryevent: "single", thirdstate: "move", species: "folca", childrennum: 0, fatherstate: "single", motherstate: "single", time: timeNow);    
       await dbhelper.updateUser(uservalue);

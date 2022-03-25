@@ -391,6 +391,7 @@ class DBHelper{
       );
   }
 
+  
     //Define method that updates user data 
   Future<void> updateUser(UserValue uservalue) async{
     //Get the reference to the database
