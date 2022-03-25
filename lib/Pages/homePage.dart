@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
 import 'package:rive/rive.dart';
+import 'package:less_waste/Helper/DB_Helper.dart';
 
 import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
 
@@ -20,6 +21,12 @@ class _HomePageState extends State<HomePage> {
   late String imagePath;
   late File imageFile;
   late String imageData;
+  DateTime timeNowDate = new DateTime.now();
+  int timeNow = DateTime.now().millisecondsSinceEpoch;
+
+
+  //Create Databse Object
+  DBHelper dbhelper = DBHelper();
 
   Future pickImage(bool isCamera) async {
     var image;
@@ -47,7 +54,40 @@ class _HomePageState extends State<HomePage> {
     };
     String jsonString = json.encode(jsonMap);
     http.Response response = await http.post(Uri.parse(url_to_api), body:jsonString);
+    var parsed = jsonDecode(response.body);
+    //fromJson(parsed);
+    parsed.forEach((key, value) async{
+      //record the key and value
+      await insertDB(key, value);
+      print('#####$key######$value############');
+    });
+    var foods = jsonDecode(response.body);
     print(response.body);
+  }
+
+  //NNNNNOOOOOOO NEED!!!!!
+  Future<int> getMaxId() async{
+
+   int maxId = await dbhelper.getMaxId();
+   return maxId;
+  }
+  
+
+  Future<void> insertDB(String name, int number) async{
+
+   // var maxId = await dbhelper.getMaxId();
+    //print('##########################MaxID = $maxId###############################');
+    //maxId = maxId + 1;
+    //timeNow -> DateTime, + 7 days, --> int timestamp
+    var expireDate = timeNowDate.add(Duration(days: 7)).millisecondsSinceEpoch;
+    print('#########################$expireDate##################');
+    var newFood = Food(name:name, category: 'Meat', boughttime: timeNow, expiretime: expireDate, quantitytype: 'bag', quantitynum: number, consumestate: 0.0, state: 'good');
+
+    print(newFood);
+
+    await dbhelper.insertFood(newFood);
+    print(await dbhelper.queryAll('foods'));
+
   }
 
   @override

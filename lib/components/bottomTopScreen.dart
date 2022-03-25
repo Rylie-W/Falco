@@ -64,7 +64,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
 
   //Create Databse Object
   DBHelper dbhelper = DBHelper();
-  List food = ['', '', -1, -1, '', -1, -1.0, ''];
+  List food = ['name', '', -1, -1, '', -1, -1.0, ''];
 
   //check the primary state of uservalue should be updated or not; if so, update to the latest
   Future<void> updatePrimaryState() async{
@@ -112,9 +112,9 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   
   Future<void> insertItem() async{
        //Insert a new Food butter
-      var butter = Food(id: 0, name: 'butter', category: 'MilkProduct', boughttime: 154893, expiretime: 156432, quantitytype: 'pieces', quantitynum: 3, consumestate: 0.50, state: 'good'); 
+      var butter = Food(name: 'butter', category: 'MilkProduct', boughttime: 154893, expiretime: 156432, quantitytype: 'pieces', quantitynum: 3, consumestate: 0.50, state: 'good'); 
       await dbhelper.insertFood(butter);
-      var egg = Food(id: 1, name: 'eggs', category: 'Meat', boughttime: 134554, expiretime: 1654757, quantitytype: 'number', quantitynum: 4, consumestate: 0, state: 'good');
+      var egg = Food(name: 'eggs', category: 'Meat', boughttime: 134554, expiretime: 1654757, quantitytype: 'number', quantitynum: 4, consumestate: 0, state: 'good');
       await dbhelper.insertFood(egg);
 
       //await dbhelper.testDB();
@@ -126,18 +126,16 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
 
   Future<void> insertDB(List _food) async{
 
-    var maxId = await dbhelper.getMaxId();
-    print('##########################MaxID = $maxId###############################');
-    maxId = maxId + 1;
-    var newFood = Food(id: maxId, name: _food[0], category: _food[1], boughttime: _food[2], expiretime: _food[3], quantitytype: _food[4], quantitynum: _food[5], consumestate: _food[6], state: _food[7]);
+    //var maxId = await dbhelper.getMaxId();
+    //print('##########################MaxID = $maxId###############################');
+    //maxId = maxId + 1;
+    var newFood = Food(name: _food[0], category: _food[1], boughttime: _food[2], expiretime: _food[3], quantitytype: _food[4], quantitynum: _food[5], consumestate: _food[6], state: _food[7]);
     print(newFood);
 
     await dbhelper.insertFood(newFood);
     print(await dbhelper.queryAll('foods'));
 
   }
-
-
 
 
   Future<List<String>> getItemName() async {
@@ -169,11 +167,11 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
    Future<List<DateTime>> getItemExpireingTime() async{
     //get all foods quantity number as a list of integers
     List<int> expire = await dbhelper.getAllUncosumedFoodIntValues('expiretime') ;
-    var maxID = await dbhelper.getMaxId() + 1;
+    //var maxID = await dbhelper.getMaxId() + 1;
 
     //int index = 0;
     //Convert the List<int> into a List<DateTime>/ timestamp ----->  DateTime
-    var expireDate = List<DateTime>.generate(maxID, (i) => DateTime.fromMillisecondsSinceEpoch(expire[i]));
+    var expireDate = List<DateTime>.generate(expire.length, (i) => DateTime.fromMillisecondsSinceEpoch(expire[i]));
     print('#########################$expireDate##################');
     //print('############################################second##########################');
     //print(expire);
@@ -210,23 +208,23 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
     });
   }
 
-  Future<void> deleteItem(index) async{
+  Future<void> deleteItem(String value) async{
       //items = await getItemName();
-      dbhelper.deleteFood(index);
+      dbhelper.deleteFood(value);
 
   }
 
 
-  Future<void> updateFoodState(int id, String name, String attribute) async{
+  Future<void> updateFoodState(String name, String attribute) async{
      var updatedFood = await dbhelper.queryOne('foods', name);
      print(updatedFood);
      if(attribute == 'consumed'){
      //var consumedFoodUpdate = Food(id: id, name: name, category: updatedFood[0].category, boughttime: updatedFood[0].boughttime, expiretime: updatedFood[0].expiretime, quantitytype: updatedFood[0].quantitytype, quantitynum: 0, consumestate: 1.0, state: 'consumed');
-      dbhelper.updateFoodConsumed(id);
+      dbhelper.updateFoodConsumed(name);
      }
      else{
       //var wastedFoodUpdate = Food(id: id, name: name, category: updatedFood[0].category, boughttime: updatedFood[0].boughttime, expiretime: updatedFood[0].expiretime, quantitytype: updatedFood[0].quantitytype, quantitynum: updatedFood[0].quantitynum, consumestate: 1.0, state: 'wasted');
-      dbhelper.updateFoodWaste(id);
+      dbhelper.updateFoodWaste(name);
 
      }
   }
@@ -234,11 +232,14 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   //when to call this function? At a certain time evey day.
   Future<void> autocheckWaste() async{
     //get every instance out of Foods table and compare its expiretime with current time
-    int maxID = await dbhelper.getMaxId();
-    for(int i = 0; i <= maxID ; i++ ){
+    //int maxID = await dbhelper.getMaxId();
+    var foods = await dbhelper.queryAllUnconsumedFood();
+
+    for(int i = 0; i <= foods.length ; i++ ){
       var expiretime = await dbhelper.getAllUncosumedFoodIntValues('expiretime');
+      var foodName = await dbhelper.getAllUncosumedFoodStringValues('name');
       if(expiretime[i] < timeNow){
-        dbhelper.updateFoodWaste(i);
+        dbhelper.updateFoodWaste(foodName[i]);
       }
     }
   }
@@ -264,6 +265,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
       var uservalue = UserValue(name: user1[0].name, negative: user1[0].negative + 1, positive: user1[0].positive, primarystate: user1[0].primarystate, secondarystate: 'satisfied', secondaryevent: "single", thirdstate: "move", species: "folca", childrennum: 0, fatherstate: "single", motherstate: "single", time: timeNow);    
       await dbhelper.updateUser(uservalue);
       await updatePrimaryState();
+      print(await dbhelper.queryAll("users"));
     }
 
   }
@@ -384,7 +386,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                       var foodNum = num[index];
                       var foodType = type[index];
 
-                      return buildItem(item, expire, foodNum, foodType, index);
+                      return buildItem(item, remainDays, foodNum, foodType, index);
                     }
                 )
             );
@@ -398,7 +400,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   }
   
 
-  Widget buildItem(String text, DateTime expire, int foodNum, String foodType, int index) {
+  Widget buildItem(String text, int expire, int foodNum, String foodType, int index) {
     var categoryIconImagePath = null;
     if(GlobalCateIconMap[text] == null) {
       categoryIconImagePath = GlobalCateIconMap["Others"];
@@ -427,6 +429,8 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
           // A pane can dismiss the Slidable.
           dismissible: DismissiblePane(onDismissed: () {
             setState(() {
+              updateFoodState(text, 'wasted');
+              updateUserValue('negative');
               items.removeAt(index);
             });
           }),
@@ -436,7 +440,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
             // A SlidableAction can have an icon and/or a label.
             SlidableAction(
               onPressed: (BuildContext context) {
-                updateFoodState(index, text, 'wasted');
+                updateFoodState( text, 'wasted');
                 updateUserValue('negative');
               },
               backgroundColor: Color(0xFFFE4A49),
@@ -452,6 +456,8 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
           motion: ScrollMotion(),
           dismissible: DismissiblePane(onDismissed: () {
             setState(() {
+              updateFoodState(text, 'consumed');
+              updateUserValue('positive');
               items.removeAt(index);
             });
           }),
@@ -460,7 +466,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
               // An action can be bigger than the others.
               flex: 2,
               onPressed: (BuildContext context) {
-                updateFoodState(index, text, 'consumed');
+                updateFoodState( text, 'consumed');
                 updateUserValue('positive');
                 buildList();
               },
@@ -524,7 +530,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
           },
           onLongPress: () {
             //長按卡片刪除
-            deleteItem(index);
+            deleteItem(text);
             buildList();
           },
         ),
@@ -533,15 +539,15 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
     );
   }
 
-  Future<void> pushItemDetailScreen(int index, String text) async{
-    String quantype = await dbhelper.getOneFoodValue(index, 'quantitytype');
-    int quannum = await dbhelper.getOneFoodIntValue(index, 'quantitynum');
-    int expitime = await dbhelper.getOneFoodIntValue(index, 'expiretime');
+  void pushItemDetailScreen(int index, String text) async{
+    String quantype = await dbhelper.getOneFoodValue(text, 'quantitytype');
+    int quannum = await dbhelper.getOneFoodIntValue(text, 'quantitynum');
+    int expitime = await dbhelper.getOneFoodIntValue(text, 'expiretime');
     var expireDate =DateTime.fromMillisecondsSinceEpoch(expitime);
     var remainDays = expireDate.difference(timeNowDate).inDays;
 
-    String category = await dbhelper.getOneFoodValue(index, 'category');
-    double consumeprogress = await dbhelper.getOneFoodDoubleValue(index, 'consumestate');
+    String category = await dbhelper.getOneFoodValue(text, 'category');
+    double consumeprogress = await dbhelper.getOneFoodDoubleValue(text, 'consumestate');
 
      Navigator.push(context, MaterialPageRoute<void>(
               builder: (BuildContext context) {
@@ -652,7 +658,11 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             _buildButtonColumn2(context, color, 'No date'),
-                            DataPicker(expiredate: food[3],),
+                             DataPicker(getdatePicker: (value) {
+                              setState(() {
+                                food[3] = value;
+                              });
+                            },)
                             //food[3] = DataPicker().expiredate,
                           ],
                         ),
@@ -690,51 +700,53 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                     ),
                   ],
                 ),
-                floatingActionButton: FloatingActionButton(
-                  //backgroundColor: const Color(0xff03dac6),
-                  //foregroundColor: Colors.black,
-                  onPressed: () {
-                    // Respond to button press  -----> write in database
-                    //convert string to int
-                    try{
-                      //用戶不需要輸入購買時間，直接默認為用戶第一次添加事物的當前時間
-                      // var boughttime = timeNow;
-                      //food[1] = Category
-                      food[0] = nameController.text;
-                      food[1] = BodyWidget().category;
-                      food[2] = timeNow;
-                      //food[3] = DataPicker().expiredate;
-                      food[4] = '';
-                      food[5] = QuantityNumber().quantityNum;
-                      food[6] = 0.0;
-                      food[7] = 'good';
-                      //var quantityNum = int.parse(quanNumController.text);
+            floatingActionButton: FloatingActionButton(
+              //backgroundColor: const Color(0xff03dac6),
+              //foregroundColor: Colors.black,
+              onPressed: () {
+                // Respond to button press  -----> write in database
+                //convert string to int
+                      try{
+                          //用戶不需要輸入購買時間，直接默認為用戶第一次添加事物的當前時間
+                        // var boughttime = timeNow;
+                          //food[1] = Category
+                          food[0] = nameController.text;
+                          food[1] = BodyWidget().category;
+                          food[2] = timeNow;
+                          //food[3] = DataPicker().expiredate;
+                          food[4] = '';
+                          food[5] = QuantityNumber().quantityNum;
+                          food[6] = 0.0;
+                          food[7] = 'good';
+                          //var quantityNum = int.parse(quanNumController.text);
 
-                      //接上InputPage裏DateTime時間組件，再轉化成timestamp存進數據庫
-                      //var expiretime = int.parse(expireTimeController.text);
+                          //接上InputPage裏DateTime時間組件，再轉化成timestamp存進數據庫
+                          //var expiretime = int.parse(expireTimeController.text);
 
-                      //food[3]是可以直接傳入數據庫的int timestamp
-                      DateTime ExpireDays = DateTime.fromMillisecondsSinceEpoch(food[3]);
-                      var remainExpireDays = ExpireDays.difference(timeNowDate).inDays;
-                      addItemExpi(remainExpireDays);
-                      addItemName(food[0]);
-                      print(food);
+                        //food[3]是可以直接傳入數據庫的int timestamp
+                        DateTime expireDays = DateTime.fromMillisecondsSinceEpoch(food[3]);
+                        var remainExpireDays = expireDays.difference(timeNowDate).inDays;
+                        addItemExpi(remainExpireDays);
+                        addItemName(food[0]);
+                        print(food);
 
-                      //Calculate the current state of the new food
-                      //well actually i should assume the state of a new food should always be good, unless the user is an idiot
-                      //But i'm going to do the calculation anyway
+                        //Calculate the current state of the new food
+                        //well actually i should assume the state of a new food should always be good, unless the user is an idiot
+                        //But i'm going to do the calculation anyway
 
-                      //insert new data into database
-                      insertDB(food);
-                      print(dbhelper.queryAll('foods'));
+                        //insert new data into database
+                        insertDB(food);
+                        print('#################################${dbhelper.queryAll('foods')}#####################');
 
-                      //user positive value add 1
-                      //var user1 = dbhelper.queryAll('users');
-                      updateUserValue('positive');
+                        //user positive value add 1
+                        //var user1 = dbhelper.queryAll('users');
+                        updateUserValue('positive');
 
-                    } on FormatException{
-                      print('Format Error!');
-                    }
+                      
+
+                        } on FormatException{
+                          print('Format Error!');
+                        }
 
                     // close route
                     // when push is used, it pushes new item on stack of navigator

@@ -107,10 +107,10 @@ class _InputPageState extends State<InputPage> {
   
   Future<void> insertDB() async{
 
-    var maxId = await dbhelper.getMaxId();
-    print('##########################MaxID = $maxId###############################');
-    maxId = maxId + 1;
-    var newFood = Food(id: maxId, name: food[0], category: food[1], boughttime: food[2], expiretime: food[3], quantitytype: food[4], quantitynum: food[5], consumestate: food[6], state: food[7]);
+    //var maxId = await dbhelper.getMaxId();
+    //print('##########################MaxID = $maxId###############################');
+    //axId = maxId + 1;
+    var newFood = Food(name: food[0], category: food[1], boughttime: food[2], expiretime: food[3], quantitytype: food[4], quantitynum: food[5], consumestate: food[6], state: food[7]);
     print(newFood);
 
     await dbhelper.insertFood(newFood);
@@ -174,7 +174,11 @@ class _InputPageState extends State<InputPage> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             _buildButtonColumn2(context, color, 'No date'),
-            DataPicker(expiredate: food[3])
+            DataPicker(getdatePicker: (value) {
+              setState(() {
+                food[3] = value;
+              });
+            },)
             //food[3] = DataPicker().expiredate,
           ],
         ),
@@ -328,7 +332,7 @@ class _InputPageState extends State<InputPage> {
         onPressed: () => showDialog<String>(
               context: context,
               builder: (BuildContext context) => AlertDialog(
-                title: Text('Category List'),
+                title: Text('Quantity'),
                 content: QuantityNumber(),
                 //food[1] = BodyWidget().category;
               ),

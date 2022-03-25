@@ -3,14 +3,17 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
+// ignore: must_be_immutable
 class DataPicker extends StatefulWidget {
-  var expiredate = _DataPickerState().expireDate;
+  // ignore: prefer_typing_uninitialized_variables
+  var expiredate;
   //DataPicker({Key key}) : super(key: key);
-  DataPicker({required this.expiredate});
+  DataPicker({Key? key, required this.getdatePicker}) : super(key: key);
+  final ValueChanged<int> getdatePicker;
 
   @override
   _DataPickerState createState() {
-    return _DataPickerState();
+    return _DataPickerState(expiredate);
   }
 }
 
@@ -18,6 +21,9 @@ class _DataPickerState extends State<DataPicker> {
   DateTime selectedDate = DateTime.now();
   //List foodDate = ['', '', -1, -1, '', -1, -1.0, ''];
   int expireDate = -1;
+  final ValueChanged<int> getdatePicker;
+
+  _DataPickerState(this.getdatePicker);
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +58,7 @@ class _DataPickerState extends State<DataPicker> {
                     selectedDate = value;
                     int timestamp = selectedDate.millisecondsSinceEpoch;
                     expireDate = timestamp;
+                    getdatePicker(expireDate);
                    // Navigator.pop(context)
                     //記錄下用戶選擇的時間 ------> 存入數據庫
                   });
