@@ -27,6 +27,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   TextEditingController boughtTimeController = TextEditingController();
   TextEditingController quanTypeController = TextEditingController();
   TextEditingController quanNumController = TextEditingController();
+  TextEditingController quanNumAndTypeController = TextEditingController();
   TextEditingController categoryController = TextEditingController();
 
   @override
@@ -49,7 +50,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
     "SeaFood": "assets/category/seafood.png",
     "Meat": "assets/category/meat.png",
     "Milk": "assets/category/milk.png",
-    "MilkProduct": "assets/category/cheese.png",
+    "Milk Product": "assets/category/cheese.png",
     "Fruits": "assets/category/fruits.png",
     "Egg": "assets/category/egg.png",
     "Vegetable": "assets/category/vegetable.png",
@@ -113,7 +114,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   
   Future<void> insertItem() async{
        //Insert a new Food butter
-      var butter = Food(name: 'butter', category: 'MilkProduct', boughttime: 154893, expiretime: 156432, quantitytype: 'pieces', quantitynum: 3, consumestate: 0.50, state: 'good'); 
+      var butter = Food(name: 'butter', category: 'Milk Product', boughttime: 154893, expiretime: 156432, quantitytype: 'pieces', quantitynum: 3, consumestate: 0.50, state: 'good');
       await dbhelper.insertFood(butter);
       var egg = Food(name: 'eggs', category: 'Egg', boughttime: 134554, expiretime: 1654757, quantitytype: 'number', quantitynum: 4, consumestate: 0, state: 'good');
       await dbhelper.insertFood(egg);
@@ -296,19 +297,30 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
 
       body: Column(
         children: [
-          TextButton.icon(
-            onPressed: (){
-              //order the ListView
-            },
-            icon: RotatedBox(
-              quarterTurns: 1,
-              child: Icon(Icons.compare_arrows, size: 28,)
-            ),
-            label: Text(
-              'Expire Remaining Time Ascending',
-              style: TextStyle(fontSize: 6),
-            ),
-          ),
+              TextField(
+                style: new TextStyle(
+                    fontWeight: FontWeight.w400,
+                    fontFamily: "SegoeUI",
+                    fontStyle: FontStyle.normal,
+                    fontSize: 16.0
+                ),
+                decoration: InputDecoration(
+                  enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(5.5)
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.orange),
+                      borderRadius: BorderRadius.circular(5.5)
+                  ),
+                  prefixIcon: Icon(
+                    Icons.search,
+                  ),
+                  hintStyle: TextStyle(fontWeight: FontWeight.w300),
+                  hintText: "Search"
+                ),
+              ),
+
 
         Expanded(child: buildList()),
         ],
@@ -329,10 +341,10 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
 
   void pushAddItemPage() {
     //String date = dateToday.toString().substring(0, 10);
-    Color color = Theme.of(context).primaryColor;
-    Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => InputPage())
-    );
+    // Color color = Theme.of(context).primaryColor;
+    // Navigator.of(context).push(
+    //     MaterialPageRoute(builder: (context) => InputPage())
+    // );
 
   }
 
@@ -633,14 +645,24 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   {
     return new Row(children: strings.map((item) => new Text(item)).toList());
   }
+  Widget heightSpacer(double myHeight) => SizedBox(height: myHeight);
   /// opens add new item screen
   void pushAddItemScreen() {
     //String date = dateToday.toString().substring(0, 10);
     Color color = Theme.of(context).primaryColor;
     const double padding = 15;
 
-    final Category = ["Vegetable", "Meat", "Fruit", "Milk Product", "Milk"];
-    List<Widget> categortyList = new List<Widget>.generate(5, (index) => new Text(Category[index]));
+    final Category = ["Vegetable", "Meat", "Fruit", "Milk Product", "Milk", "Sea Food", "Egg", "Others"];
+    List<Widget> categortyList = new List<Widget>.generate(8, (index) => new Text(Category[index]));
+    final quanTypes = ["Gram", "Kilogram", "Piece", "Bag", "Bottle", "Number"];
+    List<Widget> quanTypeList = new List<Widget>.generate(6, (index) => new Text(quanTypes[index]));
+    final nums = List.generate(20, (index) => index);
+    List<Widget> numList = List.generate(20, (index) => new Text("$index"));
+    int quanNum = 0;
+    var quanType = "";
+    DateTime selectedDate = DateTime.now();
+    int expireTimeStamp = 0;
+    Color textFieldColor = Colors.orange;
     Navigator.of(context).push(
         MaterialPageRoute(
             builder: (context) {
@@ -648,142 +670,316 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                 appBar: AppBar(
                   title: Text('Add an item'),
                 ),
-                body: ListView(
-                  children: <Widget>[
-                    TextField(
-                      autofocus: true,
-                      textAlign: TextAlign.center,
-                      decoration: InputDecoration(
-                        hintText: 'e.g. Eggs',
-                        hintStyle: TextStyle(fontWeight: FontWeight.w300),
-                        border: UnderlineInputBorder(),
+                body: Padding(
+                  padding: const EdgeInsets.all(15),
+                  child: ListView(
+                    children: <Widget>[
+                      TextField(
+                        style: new TextStyle(
+                            fontWeight: FontWeight.w400,
+                            fontFamily: "SegoeUI",
+                            fontStyle: FontStyle.normal,
+                            fontSize: 24.0
+                        ),
+                        decoration: InputDecoration(
+                          enabledBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: Colors.grey),
+                              borderRadius: BorderRadius.circular(5.5)
+                          ),
+                          focusedBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: textFieldColor),
+                              borderRadius: BorderRadius.circular(5.5)
+                          ),
+                          prefixIcon: Icon(
+                            Icons.fastfood,
+                            color: textFieldColor,
+                          ),
+                          hintText: 'e.g. Eggs',
+                          hintStyle: TextStyle(fontWeight: FontWeight.w300),
+                        ),
+                        autofocus: true,
+                        controller: nameController,
+                        onSubmitted:(value){},
                       ),
-                      controller: nameController,
-                      onSubmitted:(value){},
-                    ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Text(
-                          "Select an expiration date",
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.grey,
+                      heightSpacer(5),
+                      TextField(
+                        style: TextStyle(
+                            fontWeight: FontWeight.w400,
+                            fontFamily: "SegoeUI",
+                            fontStyle: FontStyle.normal,
+                            fontSize: 24.0
+                        ),
+                        decoration: InputDecoration(
+                          enabledBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: Colors.grey),
+                              borderRadius: BorderRadius.circular(5.5)
                           ),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-
-                            //需要添加只能選擇一個的判斷
-                            _buildButtonColumn1(color, 3),
-                            _buildButtonColumn1(color, 4),
-                          ],
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            _buildButtonColumn2(context, color, 'No date'),
-                             DataPicker(getdatePicker: (value) {
-                              setState(() {
-                                food[3] = value;
-                              });
-                            },)
-                            //food[3] = DataPicker().expiredate,
-                          ],
-                        ),
-                      ],
-                    ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Text(
-                          "Detail",
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.grey,
+                          focusedBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: textFieldColor),
+                              borderRadius: BorderRadius.circular(5.5)
                           ),
+                          prefixIcon: Icon(
+                            Icons.food_bank,
+                            color: textFieldColor,
+                          ),
+                          hintStyle: TextStyle(fontWeight: FontWeight.w300),
                         ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            //quantity number + quantity type
-                            _buildButtonColumn2(context, color, 'quantity number'),
-                            _buildButtonColumn2(context, color, 'quantity type'),
-                          ],
+                        onTap: () {
+                          FocusScope.of(context).requestFocus(new FocusNode());
+                          showCupertinoModalPopup(
+                              context: context,
+                              builder: (context) {
+                                return Container(
+                                    height: 200,
+                                    color: Colors.white,
+                                    child: Row(
+                                      children: [
+                                        Expanded(child:
+                                        CupertinoPicker(
+                                          itemExtent: 24.0,
+                                          onSelectedItemChanged: (value) {
+                                            setState(() {
+                                              categoryController.text = Category[value];
+                                            });
+                                          },
+                                          children: categortyList,
+                                        ),
+                                        )
+                                      ],
+                                    )
+                                );
+                              }
+                          );
+                        },
+                        controller: categoryController,
+                      ),
+                      heightSpacer(5),
+                      TextField(
+                        style: new TextStyle(
+                            fontWeight: FontWeight.w400,
+                            fontFamily: "SegoeUI",
+                            fontStyle: FontStyle.normal,
+                            fontSize: 24.0
                         ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            //category
-                            _buildButtonColumn3(context, color),
-                            //food[1] = BodyWidget().category,
+                        decoration: InputDecoration(
+                          enabledBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: Colors.grey),
+                              borderRadius: BorderRadius.circular(5.5)
+                          ),
+                          focusedBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: textFieldColor),
+                              borderRadius: BorderRadius.circular(5.5)
+                          ),
+                          prefixIcon: Icon(
+                            Icons.shopping_bag,
+                            color: textFieldColor,
+                          ),
+                          hintStyle: TextStyle(fontWeight: FontWeight.w300),
+                        ),
+                        onTap: () {
+                          FocusScope.of(context).requestFocus(new FocusNode());
+                          showCupertinoModalPopup(
+                              context: context,
+                              builder: (context) {
+                                return Container(
+                                    height: 200,
+                                    color: Colors.white,
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          flex: 3,
+                                          child:
+                                          CupertinoPicker(
+                                            itemExtent: 24.0,
+                                            onSelectedItemChanged: (value) {
+                                              setState(() {
+                                                quanNum = nums[value];
+                                                quanNumController.text = "$quanNum";
+                                                quanNumAndTypeController.text = "$quanNum $quanType";
+                                              });
+                                            },
+                                            children: numList,
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 3,
+                                          child:
+                                          CupertinoPicker(
+                                            itemExtent: 24.0,
+                                            onSelectedItemChanged: (value) {
+                                              setState(() {
+                                                quanTypeController.text = quanTypes[value];
+                                                quanType = quanTypes[value];
+                                                quanNumAndTypeController.text = "$quanNum $quanType";
+                                              });
+                                            },
+                                            children: quanTypeList,
+                                          ),
+                                        )
+                                      ],
+                                    )
+                                );
+                              }
+                          );
+                        },
+                        controller: quanNumAndTypeController,
+                      ),
+                      heightSpacer(5),
+                      TextField(
+                        style: new TextStyle(
+                            fontWeight: FontWeight.w400,
+                            fontFamily: "SegoeUI",
+                            fontStyle: FontStyle.normal,
+                            fontSize: 24.0
+                        ),
+                        decoration: InputDecoration(
+                          enabledBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: Colors.grey),
+                              borderRadius: BorderRadius.circular(5.5)
+                          ),
+                          focusedBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: textFieldColor),
+                              borderRadius: BorderRadius.circular(5.5)
+                          ),
+                          prefixIcon: Icon(
+                            Icons.calendar_today,
+                            color: textFieldColor,
+                          ),
+                          hintStyle: TextStyle(fontWeight: FontWeight.w300),
+                        ),
+                        onTap: () {
+                          FocusScope.of(context).requestFocus(new FocusNode());
+                          showCupertinoModalPopup(
+                              context: context,
+                              builder: (context) {
+                                return Container(
+                                    height: 200,
+                                    color: Colors.white,
+                                    child: Row(
+                                      children: [
+                                        Expanded(child:
+                                        Container(
+                                          height: MediaQuery.of(context).copyWith().size.height * 0.25,
+                                          color: Colors.white,
+                                          child: CupertinoDatePicker(
+                                            mode: CupertinoDatePickerMode.date,
+                                            onDateTimeChanged: (value) {
 
-                            _buildButtonColumn2(context, color, timeNowDate.toString().substring(0,10)),
-                          ],
-                        )
-                      ],
+                                              if (value != null && value != selectedDate) {
+                                                setState(() {
+                                                  selectedDate = value;
+                                                  int year = selectedDate.year;
+                                                  int month = selectedDate.month;
+                                                  int day = selectedDate.day;
+                                                  int timestamp = selectedDate.millisecondsSinceEpoch;
+                                                  print("timestamp$timestamp");
+                                                  expireTimeStamp = timestamp;
+                                                  expireTimeController.text = "$year-$month-$day";
+                                                  // Navigator.pop(context)
+                                                  //記錄下用戶選擇的時間 ------> 存入數據庫
+                                                }
+                                                );
+                                              }
+                                            },
+
+                                            initialDateTime: DateTime.now(),
+                                            minimumYear: 2000,
+                                            maximumYear: 2023,
+                                          ),
+
+                                        )
+                                        )
+                                      ],
+                                    )
+                                );
+                              }
+                          );
+                        },
+                        controller: expireTimeController,
+                      ),
+                      heightSpacer(5),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          const Text(
+                            "Expiration date ",
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+
+                              //需要添加只能選擇一個的判斷
+                              _buildButtonColumn1(color, 1),
+                              _buildButtonColumn1(color, 4),
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              _buildButtonColumn1(color, 7),
+                              _buildButtonColumn1(color, 14),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                floatingActionButton: FloatingActionButton(
+                  onPressed: () {
+                          try{
+                              food[0] = nameController.text;
+                              food[1] = categoryController.text;
+                              food[2] = timeNow;
+                              food[3] = expireTimeStamp;
+                              food[4] = quanTypeController.text;
+                              food[5] = quanNum;
+                              food[6] = 0.0;
+                              food[7] = 'good';
+                              print(food);
+                              //var quantityNum = int.parse(quanNumController.text);
+                              //接上InputPage裏DateTime時間組件，再轉化成timestamp存進數據庫
+                              //var expiretime = int.parse(expireTimeController.text);
+
+                            //food[3]是可以直接傳入數據庫的int timestamp
+                            DateTime expireDays = DateTime.fromMillisecondsSinceEpoch(food[3]);
+                            var remainExpireDays = expireDays.difference(timeNowDate).inDays;
+                            addItemExpi(remainExpireDays);
+                            addItemName(food[0]);
+                            print(food);
+
+                            //Calculate the current state of the new food
+                            //well actually i should assume the state of a new food should always be good, unless the user is an idiot
+                            //But i'm going to do the calculation anyway
+
+                            //insert new data into database
+                            insertDB(food);
+                            print('#################################${dbhelper.queryAll('foods')}#####################');
+
+                            //user positive value add 1
+                            //var user1 = dbhelper.queryAll('users');
+                            updateUserValue('positive');
+
+
+
+                            } on FormatException{
+                              print('Format Error!');
+                            }
+
+                        // close route
+                        // when push is used, it pushes new item on stack of navigator
+                        // simply pop off stack and it goes back
+                        Navigator.pop(context);
+
+                      },
+                      tooltip: 'Add food',
+                      child: const Icon(Icons.add),
                     ),
-                  ],
-                ),
-            floatingActionButton: FloatingActionButton(
-              //backgroundColor: const Color(0xff03dac6),
-              //foregroundColor: Colors.black,
-              onPressed: () {
-                // Respond to button press  -----> write in database
-                //convert string to int
-                      try{
-                          //用戶不需要輸入購買時間，直接默認為用戶第一次添加事物的當前時間
-                        // var boughttime = timeNow;
-                          //food[1] = Category
-                          food[0] = nameController.text;
-                          food[1] = BodyWidget().category;
-                          food[2] = timeNow;
-                          //food[3] = DataPicker().expiredate;
-                          food[4] = '';
-                          food[5] = QuantityNumber().quantityNum;
-                          food[6] = 0.0;
-                          food[7] = 'good';
-                          //var quantityNum = int.parse(quanNumController.text);
-
-                          //接上InputPage裏DateTime時間組件，再轉化成timestamp存進數據庫
-                          //var expiretime = int.parse(expireTimeController.text);
-
-                        //food[3]是可以直接傳入數據庫的int timestamp
-                        DateTime expireDays = DateTime.fromMillisecondsSinceEpoch(food[3]);
-                        var remainExpireDays = expireDays.difference(timeNowDate).inDays;
-                        addItemExpi(remainExpireDays);
-                        addItemName(food[0]);
-                        print(food);
-
-                        //Calculate the current state of the new food
-                        //well actually i should assume the state of a new food should always be good, unless the user is an idiot
-                        //But i'm going to do the calculation anyway
-
-                        //insert new data into database
-                        insertDB(food);
-                        print('#################################${dbhelper.queryAll('foods')}#####################');
-
-                        //user positive value add 1
-                        //var user1 = dbhelper.queryAll('users');
-                        updateUserValue('positive');
-
-                      
-
-                        } on FormatException{
-                          print('Format Error!');
-                        }
-
-                    // close route
-                    // when push is used, it pushes new item on stack of navigator
-                    // simply pop off stack and it goes back
-                    Navigator.pop(context);
-
-                  },
-                  tooltip: 'Add food',
-                  child: const Icon(Icons.add),
-                ),
-              );
+                  );
             }
         )
     );
@@ -861,7 +1057,6 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                   autofocus: true,
 
                   decoration: InputDecoration(
-                      hintText: 'e.g. Eggs',
                       contentPadding: EdgeInsets.all(16)
                   ),
 
@@ -898,63 +1093,6 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
         ),
         controller: quanTypeController,
       )
-    );
-  }
-
-  Widget getAppBarUI() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.blue,
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-              color: Colors.blue,
-              offset: const Offset(0, 2),
-              blurRadius: 4.0),
-        ],
-      ),
-      child: Padding(
-        padding: EdgeInsets.only(
-            top: MediaQuery.of(context).padding.top, left: 8, right: 8),
-        child: Row(
-          children: <Widget>[
-            Container(
-              alignment: Alignment.centerLeft,
-              width: AppBar().preferredSize.height + 40,
-              height: AppBar().preferredSize.height,
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: const BorderRadius.all(
-                    Radius.circular(32.0),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Icon(Icons.close),
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Center(
-                child: Text(
-                  'Filters',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 22,
-                  ),
-                ),
-              ),
-            ),
-            Container(
-              width: AppBar().preferredSize.height + 40,
-              height: AppBar().preferredSize.height,
-            )
-          ],
-        ),
-      ),
     );
   }
 }
