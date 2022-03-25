@@ -266,6 +266,7 @@ class _InputPageState extends State<InputPage> {
                     var remainExpireDays = ExpireDays.difference(timeNowDate).inDays;
                     addItemExpi(remainExpireDays);
                     addItemName(food[0]);
+                    showAchievementDialog(Achievements.achievementNameList[4]);
                     print(food);
 
                     //Calculate the current state of the new food
