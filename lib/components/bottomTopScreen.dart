@@ -636,8 +636,8 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
     Color color = Theme.of(context).primaryColor;
     const double padding = 15;
 
-    final Category = ["Vegetable", "Meat", "Fruit", "Milk Product", "Milk", "Sea Food", "Egg", "Others"];
-    List<Widget> categortyList = new List<Widget>.generate(8, (index) => new Text(Category[index]));
+    final category = ["Vegetable", "Meat", "Fruit", "Milk Product", "Milk", "Sea Food", "Egg", "Others"];
+    List<Widget> categortyList = new List<Widget>.generate(8, (index) => new Text(category[index]));
     final quanTypes = ["Gram", "Kilogram", "Piece", "Bag", "Bottle", "Number"];
     List<Widget> quanTypeList = new List<Widget>.generate(6, (index) => new Text(quanTypes[index]));
     final nums = List.generate(20, (index) => index);
@@ -723,7 +723,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                                           itemExtent: 24.0,
                                           onSelectedItemChanged: (value) {
                                             setState(() {
-                                              categoryController.text = Category[value];
+                                              categoryController.text = category[value];
                                             });
                                           },
                                           children: categortyList,
@@ -858,6 +858,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                                                   int timestamp = selectedDate.millisecondsSinceEpoch;
                                                   print("timestamp$timestamp");
                                                   expireTimeStamp = timestamp;
+                                                  food[3] = expireTimeStamp;
                                                   expireTimeController.text = "$year-$month-$day";
                                                   // Navigator.pop(context)
                                                   //記錄下用戶選擇的時間 ------> 存入數據庫
@@ -895,7 +896,6 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-
                               //需要添加只能選擇一個的判斷
                               _buildButtonColumn1(color, 1),
                               _buildButtonColumn1(color, 4),
@@ -919,7 +919,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                               food[0] = nameController.text;
                               food[1] = categoryController.text;
                               food[2] = timeNow;
-                              food[3] = expireTimeStamp;
+                              //food[3] = expireTimeStamp;
                               food[4] = quanTypeController.text;
                               food[5] = quanNum;
                               food[6] = 0.0;
@@ -948,8 +948,6 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                             //var user1 = dbhelper.queryAll('users');
                             updateUserValue('positive');
 
-
-
                             } on FormatException{
                               print('Format Error!');
                             }
@@ -976,7 +974,10 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
           //record new expire time ----> value
           var later = timeNowDate.add(Duration(days: value));
           food[3] = later.millisecondsSinceEpoch;
-
+          int year = later.year;
+          int month = later.month;
+          int day = later.day;
+          expireTimeController.text = "$year-$month-$day";
         },
         icon: Icon(Icons.calendar_today, size: 18),
         label: Text("+ ${value} days"),
@@ -987,45 +988,6 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                     side: BorderSide(color: Colors.white)))));
   }
 
-  // button list for category(show category list)
-  ElevatedButton _buildButtonColumn2(BuildContext context, Color color, String lable) {
-    return ElevatedButton.icon(
-        onPressed: () => showDialog<String>(
-          context: context,
-          builder: (BuildContext context) => AlertDialog(
-            title: Text('Quantity Number'),
-            content: QuantityNumber(),
-          ),
-        ),
-        icon: Icon(Icons.calendar_today, size: 18),
-        label: Text(lable),
-        style: ButtonStyle(
-            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20.0),
-                    side: BorderSide(color: Colors.white)))));
-  }
-  ElevatedButton _buildButtonColumn3(BuildContext context, Color color) {
-    return ElevatedButton.icon(
-
-        onPressed: () => showDialog<String>(
-              context: context,
-              builder: (BuildContext context) => AlertDialog(
-                title: Text('Category List'),
-                content: BodyWidget(),
-
-              ),
-            ),
-
-        icon: Icon(Icons.calendar_today, size: 18),
-        label: Text('category'),
-        style: ButtonStyle(
-            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20.0),
-                    side: BorderSide(color: Colors.white))))
-    );
-  }
 
   /// opens edit item screen
   void pushEditItemScreen (index) {

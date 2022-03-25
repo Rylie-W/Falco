@@ -35,7 +35,7 @@ class _FrameState extends State<Frame> {
     await dbhelper.insertFood(butter);
     var egg = Food(
         name: 'eggs',
-        category: 'Meat',
+        category: 'Egg',
         boughttime: timeNow,
         expiretime: 1697969762604,
         quantitytype: 'number',
