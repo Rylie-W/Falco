@@ -139,11 +139,11 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
 
   }
 
-   Future<List<dynamic>> getAllFoods() async {
+   Future<List<dynamic>> getAllItems(String dbname) async {
     //await insertItem();
 
     //get all foods name as a list of string
-    List<dynamic> items = await dbhelper.queryAll('foods');
+    List<dynamic> items = await dbhelper.queryAll(dbname);
     //print('##################################first######################################');
     //print(items);
 
@@ -463,9 +463,9 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
 
           // A pane can dismiss the Slidable.
           dismissible: DismissiblePane(onDismissed: () {
-            setState(() {
-              updateFoodState(text, 'wasted');
-              updateUserValue('negative');
+            setState(() async{
+              await updateFoodState(text, 'wasted');
+              await updateUserValue('negative');
               items.removeAt(index);
             });
           }),
@@ -474,10 +474,12 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
           children: [
             // A SlidableAction can have an icon and/or a label.
             SlidableAction(
-              onPressed: (BuildContext context) {
-                updateFoodState( text, 'wasted');
-                updateUserValue('negative');
-              },
+              onPressed: (BuildContext context) async {
+                await updateFoodState( text, 'wasted');
+                await updateUserValue('negative');
+                var user1 = await getAllItems('users');
+                print('#########${user1[0].primarystate}#############');
+;              },
               backgroundColor: Color(0xFFFE4A49),
               foregroundColor: Colors.white,
               icon: Icons.delete,
@@ -490,9 +492,9 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
         endActionPane: ActionPane(
           motion: ScrollMotion(),
           dismissible: DismissiblePane(onDismissed: () {
-            setState(() {
-              updateFoodState(text, 'consumed');
-              updateUserValue('positive');
+            setState(() async{
+              await updateFoodState(text, 'consumed');
+              await updateUserValue('positive');
               items.removeAt(index);
             });
           }),
@@ -500,10 +502,12 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
             SlidableAction(
               // An action can be bigger than the others.
               flex: 2,
-              onPressed: (BuildContext context) {
-                updateFoodState( text, 'consumed');
-                updateUserValue('positive');
-                buildList();
+              onPressed: (BuildContext context) async{
+                await updateFoodState( text, 'consumed');
+                await updateUserValue('positive');
+                var user1 = await getAllItems('users');
+                print('#########${user1[0].primarystate}#############');
+                //buildList();
               },
               backgroundColor: progressColor,
               foregroundColor: Colors.white,
@@ -566,7 +570,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
           onLongPress: () async {
             //長按卡片刪除
             await deleteItem(text);
-            print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%${await getAllFoods()}%%%%%%%%%%%%%%%%%%%%%%%%');
+            print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%${await getAllItems('foods')}%%%%%%%%%%%%%%%%%%%%%%%%');
           },
         ),
       ),
