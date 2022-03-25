@@ -65,6 +65,7 @@ class Achievements extends StatelessWidget{
 
   Future<int> getIntSate() async{
     String primaryState = await getPrimaryState();
+    print('###################$primaryState######################');
     return stateMap[primaryState]??0;
   }
 

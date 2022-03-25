@@ -281,7 +281,15 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
 
   }
 
+  Future<String> checkIfPrimaryStateChanged() async {
+    var user1 = await dbhelper.queryAll('users');
+
+    return user1[0].primarystate;
+
+  }
+
   var txt = TextEditingController();
+
 
   @override
   Widget build(BuildContext context) {
@@ -1057,6 +1065,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                   autofocus: true,
 
                   decoration: InputDecoration(
+                      hintText: 'e.g. Eggs',
                       contentPadding: EdgeInsets.all(16)
                   ),
 

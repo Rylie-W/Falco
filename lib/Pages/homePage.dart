@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'dart:io';
 import 'package:rive/rive.dart';
 import 'package:less_waste/Helper/DB_Helper.dart';
+import 'package:less_waste/components/bottomTopScreen.dart';
 
 import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
 
@@ -27,6 +28,64 @@ class _HomePageState extends State<HomePage> {
 
   //Create Databse Object
   DBHelper dbhelper = DBHelper();
+  //check the primary state of uservalue should be updated or not; if so, update to the latest
+  Future<void> updatePrimaryState() async{
+    var user1 = await dbhelper.queryAll('users');
+    int value = user1[0].positive - user1[0].negative;
+    String primaryState;
+
+    if (value < 2){
+      primaryState='initialization';
+      await dbhelper.updateUserPrimary(primaryState);
+    }
+    if (value <= 6){
+      //judge the primary state
+      primaryState='encounter';
+      await dbhelper.updateUserPrimary(primaryState);
+    }
+    if(value > 6 && value <= 14){
+      primaryState='mate';
+      await dbhelper.updateUserPrimary(primaryState);
+    }
+    if(value > 14 && value <= 30){
+      primaryState='nest';
+      await dbhelper.updateUserPrimary(primaryState);
+    }
+    if(value > 30 && value <= 46){
+      primaryState='hatch';
+      await dbhelper.updateUserPrimary(primaryState);
+    }
+    if(value > 46 && value <= 78){
+      primaryState='learn';
+      await dbhelper.updateUserPrimary(primaryState);
+    }
+    else if(value > 78 && value <= 82){
+      primaryState='leavehome';
+      await dbhelper.updateUserPrimary(primaryState);
+    }
+    else if(value > 82 && value <= 91){
+      primaryState='snow owl';
+      await dbhelper.updateUserPrimary(primaryState);
+    }
+    else if(value > 91 && value <= 100){
+      primaryState='tawny owl';
+    }
+  }
+   //edit the state to 'consumed' and consumestate to 1, and user positive data adds 1
+  //the arugument should be 'positive'(which means positive + 1) or 'negative'(which means negative + 1)
+  Future<void> updateUserValue() async{
+    var user1 = await dbhelper.queryAll('users');
+    //int value = user1[0]['positive'] - user1[0]['negative'];
+    print('================= user =================');
+    print(user1);
+  
+      //judge the primary state
+      var uservalue = UserValue(name: user1[0].name, negative: user1[0].negative, positive: user1[0].positive + 2, primarystate: user1[0].primarystate, secondarystate: 'satisfied', secondaryevent: "single", thirdstate: "move", species: "folca", childrennum: 0, fatherstate: "single", motherstate: "single", time: timeNow);    
+      await dbhelper.updateUser(uservalue);
+      await updatePrimaryState();
+      print(await dbhelper.queryAll("users"));
+
+  }
 
   Future pickImage(bool isCamera) async {
     var image;
@@ -61,9 +120,10 @@ class _HomePageState extends State<HomePage> {
       await insertDB(key, value);
       print('#####$key######$value############');
     });
-    var foods = jsonDecode(response.body);
+    updateUserValue();
     print(response.body);
   }
+
 
   //NNNNNOOOOOOO NEED!!!!!
   Future<int> getMaxId() async{
