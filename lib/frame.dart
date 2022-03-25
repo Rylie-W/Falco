@@ -25,7 +25,7 @@ class _FrameState extends State<Frame> {
     //Insert a new Food butter
     var butter = Food(
         name: 'butter',
-        category: 'MilkProduct',
+        category: 'Milk Product',
         boughttime: timeNow,
         expiretime: 1649969762604,
         quantitytype: 'pieces',
