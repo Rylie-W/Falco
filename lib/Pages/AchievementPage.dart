@@ -381,6 +381,8 @@ class Achievements extends StatelessWidget{
 
   Future<String> getPrimaryState() async{
     List userValues = await dbHelper.queryAll("users");
+    print("============================");
+    print(userValues[0].positive-userValues[0].negative);
     String primaryState = userValues[0].primarystate;
     return primaryState;
   }

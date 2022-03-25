@@ -278,11 +278,34 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
 
   }
 
-  Future<String> checkIfPrimaryStateChanged() async {
-    var user1 = await dbhelper.queryAll('users');
-
-    return user1[0].primarystate;
-
+  String checkIfPrimaryStateChanged(int value){
+    if (value==2){
+      return Achievements.achievementNameList[1];
+    }
+    else if (value==7){
+      return Achievements.achievementNameList[2];
+    }
+    else if (value==15){
+      return Achievements.achievementNameList[3];
+    }
+    else if (value==31){
+      return Achievements.achievementNameList[4];
+    }
+    else if (value==47){
+      return Achievements.achievementNameList[5];
+    }
+    else if (value==79){
+      return Achievements.achievementNameList[6];
+    }
+    else if (value==83){
+      return Achievements.achievementNameList[7];
+    }
+    else if (value==92){
+      return Achievements.achievementNameList[8];
+    }
+    else{
+      return "None";
+    }
   }
 
   var txt = TextEditingController();
@@ -494,12 +517,17 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
             });
           }),
           children: [
-            SlidableAction(
+            SlidableAction (
               // An action can be bigger than the others.
               flex: 2,
               onPressed: (BuildContext context) {
                 updateFoodState( text, 'consumed');
                 updateUserValue('positive');
+                List user1 = await dbhelper.queryAll('users');
+                String check = checkIfPrimaryStateChanged(user1[0].positive-user1[0].negative);
+                if (check!='None'){
+                  showAchievementDialog(check);
+                }
                 buildList();
               },
               backgroundColor: progressColor,
@@ -735,7 +763,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
             floatingActionButton: FloatingActionButton(
               //backgroundColor: const Color(0xff03dac6),
               //foregroundColor: Colors.black,
-              onPressed: () {
+              onPressed: () async{
                 // Respond to button press  -----> write in database
                 //convert string to int
                       try{
@@ -773,7 +801,11 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                         //user positive value add 1
                         //var user1 = dbhelper.queryAll('users');
                         updateUserValue('positive');
-
+                        List user1 = await dbhelper.queryAll('users');
+                        String check = checkIfPrimaryStateChanged(user1[0].positive-user1[0].negative);
+                        if (check!='None'){
+                          showAchievementDialog(check);
+                        }
                  
                         } on FormatException{
                           print('Format Error!');
@@ -792,6 +824,41 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
             }
         )
     );
+  }
+
+  showAchievementDialog(String state){
+    double width= MediaQuery.of(context).size.width;
+    double height= MediaQuery.of(context).size.height;
+    int stateIndex= Achievements.stateMap[state]??-1;
+    AlertDialog dialog = AlertDialog(
+      title: const Text("Congratulations!"),
+      content:
+      new Container(
+        width: 3*width/5,
+        height: height/3,
+        padding: const EdgeInsets.all(10.0),
+        child:
+        new Column(
+          children: [
+            Expanded(child: stateIndex>-1? Image.asset(Achievements.imageList[stateIndex]):Image.asset(Achievements.imageList[12])),
+            Text(
+                stateIndex>-1?"You have made the achievement "+Achievements.achievementNameList[stateIndex]:"Something goes wrong. We are fixing it.",
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontWeight: FontWeight.bold))
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, 'OK'),
+          child: const Text('OK'),
+        ),
+      ],
+    );
+    showDialog(context: context, builder: (BuildContext context){
+      return dialog;
+    });
   }
 
   // button list for expiring date (only button)
