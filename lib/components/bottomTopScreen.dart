@@ -6,12 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:less_waste/components/quantityDialog.dart';
 
+import '../Pages/AchievementPage.dart';
 import '../Pages/InputPage.dart';
 import 'dialog.dart';
 import 'package:less_waste/Helper/DB_Helper.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'dart:convert';
 import 'datePicker.dart';
+import 'dart:async';
 
 
 class BottomTopScreen extends StatefulWidget {
@@ -64,7 +66,49 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   DBHelper dbhelper = DBHelper();
   List food = ['name', '', -1, -1, '', -1, -1.0, ''];
 
-  
+  //check the primary state of uservalue should be updated or not; if so, update to the latest
+  Future<void> updatePrimaryState() async{
+    var user1 = await dbhelper.queryAll('users');
+    int value = user1[0].positive - user1[0].negative;
+    String primaryState;
+
+    if (value < 2){
+      primaryState='initialization';
+      await dbhelper.updateUserPrimary(primaryState);
+    }
+    if (value <= 6){
+      //judge the primary state
+      primaryState='encounter';
+      await dbhelper.updateUserPrimary(primaryState);
+    }
+    if(value > 6 && value <= 14){
+      primaryState='mate';
+      await dbhelper.updateUserPrimary(primaryState);
+    }
+    if(value > 14 && value <= 30){
+      primaryState='nest';
+      await dbhelper.updateUserPrimary(primaryState);
+    }
+    if(value > 30 && value <= 46){
+      primaryState='hatch';
+      await dbhelper.updateUserPrimary(primaryState);
+    }
+    if(value > 46 && value <= 78){
+      primaryState='learn';
+      await dbhelper.updateUserPrimary(primaryState);
+    }
+    else if(value > 78 && value <= 82){
+      primaryState='leavehome';
+      await dbhelper.updateUserPrimary(primaryState);
+    }
+    else if(value > 82 && value <= 91){
+      primaryState='snow owl';
+      await dbhelper.updateUserPrimary(primaryState);
+    }
+    else if(value > 91 && value <= 100){
+      primaryState='tawny owl';
+    }
+  }
   
   Future<void> insertItem() async{
        //Insert a new Food butter
@@ -200,37 +244,12 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
     }
   }
 
-  //check the primary state of uservalue should be updated or not; if so, update to the latest
-  Future<void> updatePrimaryState() async{
-    var user1 = await dbhelper.queryAll('users');
-    int value = user1[0].positive - user1[0].negative;
-
-    if(value > 0 && value <= 6){
-      //judge the primary state
-      await dbhelper.updateUserPrimary('encounter');
-    }
-    if(value > 6 && value <= 10){
-      await dbhelper.updateUserPrimary('mate');
-    }
-    if(value > 10 && value <= 20){
-      await dbhelper.updateUserPrimary('nest');
-    }
-    if(value > 20 && value <= 30){
-      await dbhelper.updateUserPrimary('hatch');
-    }
-    if(value > 30 && value <= 40){
-      await dbhelper.updateUserPrimary('learn');
-    }
-    else if(value > 40 && value <= 50){
-       dbhelper.updateUserPrimary('leavehome');
-    }
-  }
-
   //edit the state to 'consumed' and consumestate to 1, and user positive data adds 1
   //the arugument should be 'positive'(which means positive + 1) or 'negative'(which means negative + 1)
   Future<void> updateUserValue(String state) async{
     var user1 = await dbhelper.queryAll('users');
     //int value = user1[0]['positive'] - user1[0]['negative'];
+    print('================= user =================');
     print(user1);
   
 
@@ -647,7 +666,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                             //food[3] = DataPicker().expiredate,
                           ],
                         ),
-                        ],
+                      ],
                     ),
                     Column(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -723,25 +742,27 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                         //var user1 = dbhelper.queryAll('users');
                         updateUserValue('positive');
 
+                      
+
                         } on FormatException{
                           print('Format Error!');
                         }
 
-                        // close route
-                        // when push is used, it pushes new item on stack of navigator
-                        // simply pop off stack and it goes back
-                        Navigator.pop(context);
+                    // close route
+                    // when push is used, it pushes new item on stack of navigator
+                    // simply pop off stack and it goes back
+                    Navigator.pop(context);
 
-              },
+                  },
                   tooltip: 'Add food',
                   child: const Icon(Icons.add),
-            ),
-          );
-        }
+                ),
+              );
+            }
         )
     );
   }
-            /*
+  /*
             body: Column(children: <Widget> [
                TextField(
                   autofocus: false,
@@ -837,7 +858,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                 FloatingActionButton(
                   //When the user press this button, add user inputs into the database 
                   //and add to the previous ListView
-                  onPressed:() {
+                  onPressed:() async {
 
                     //convert string to int
                     try{
@@ -864,8 +885,12 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                     print(dbhelper.queryAll('foods'));
 
                     //user positive value add 1
-                    //var user1 = dbhelper.queryAll('users');
-                    updateUserValue('positive');
+                    updateUserValue("positive");
+                    var user1 = await dbhelper.queryAll('users');
+                    String check = checkIfPrimaryStateChanged(user1[0].positive-user1[0].negative);
+                    if (check!='None'){
+                      showAchievementDialog(check);
+                    }
 
                     } on FormatException{
                       print('Format Error!');
@@ -888,7 +913,8 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
         )
     );
   }
-  */
+*/
+
   // button list for expiring date (only button)
   ElevatedButton _buildButtonColumn1(Color color, int value) {
     return ElevatedButton.icon(
@@ -1057,5 +1083,4 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
       ),
     );
   }
-
 }

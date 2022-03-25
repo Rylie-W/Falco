@@ -102,7 +102,6 @@ class _FrameState extends State<Frame> {
         ),
       ),
     );
-
   }
 }
 
