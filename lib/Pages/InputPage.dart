@@ -143,7 +143,9 @@ class _InputPageState extends State<InputPage> {
   @override
   Widget build(BuildContext context) {
     TextEditingController nameController = TextEditingController();
+    TextEditingController categoryController = TextEditingController();
     String foodName = '';
+    String category = '';
     bool showSuggestList = false;
     //List<String> items = ["eggs", "milk", "pizza"];
     
@@ -218,7 +220,6 @@ class _InputPageState extends State<InputPage> {
     /// build item
 
     //var txt = TextEditingController();
-
     return MaterialApp(
       title: 'Flutter layout demo',
       home: Scaffold(
@@ -233,12 +234,54 @@ class _InputPageState extends State<InputPage> {
               decoration: InputDecoration(
                 hintText: 'e.g. Eggs',
                 hintStyle: TextStyle(fontWeight: FontWeight.w300),
-                border: UnderlineInputBorder(),
               ),
               controller: nameController,
             ),
-            buttonSection,
+            TextField(
+              onTap: () {
+                FocusScope.of(context).requestFocus(new FocusNode());
+                showCupertinoModalPopup(
+                  context: context,
+                  builder: (context) {
+                    return Container(
+                        height: 200,
+                        color: Colors.white,
+                        child: Row(
+                            children: [
+                              Expanded(child:
+                                  CupertinoPicker(
+                                    itemExtent: 32.0,
+                                    onSelectedItemChanged: (value) {
+                                      setState(() {
+                                      });
+                                    },
+                                    children: <Widget>[
+                                      Image.asset(
+                                        "assets/category/egg.png",
+                                        width: 30,
+                                        height: 30,
+                                      ),
+                                      Text("asdaw")
+                                    ],
+                              ),
+                              )
+                            ],
+                        )
+                    );
+                  }
+                );
+              },
+              autofocus: false,
+              textAlign: TextAlign.center,
+              decoration: InputDecoration(
+                hintText: 'e.g. Eggs',
+                hintStyle: TextStyle(fontWeight: FontWeight.w300),
+                border: UnderlineInputBorder(),
+              ),
+              controller: categoryController,
+            ),
             detailSelection,
+            buttonSection,
           ],
         ),
         floatingActionButton: FloatingActionButton.extended(

@@ -21,9 +21,13 @@ class _DataPickerState extends State<DataPicker> {
   DateTime selectedDate = DateTime.now();
   //List foodDate = ['', '', -1, -1, '', -1, -1.0, ''];
   int expireDate = -1;
-  final ValueChanged<int> getdatePicker;
+  ValueChanged<int> getdatePicker(int expireDate) {
+   // TODO: implement getdatePicker
+   //return expireDate;
+   throw UnimplementedError();
+ }
 
-  _DataPickerState(this.getdatePicker);
+  _DataPickerState(getdatePicker);
 
   @override
   Widget build(BuildContext context) {
@@ -56,8 +60,10 @@ class _DataPickerState extends State<DataPicker> {
                 if (value != null && value != selectedDate)
                   setState(() {
                     selectedDate = value;
+                    print('################################$selectedDate##########################################');
                     int timestamp = selectedDate.millisecondsSinceEpoch;
                     expireDate = timestamp;
+                    print('###################################$expireDate@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@');
                     getdatePicker(expireDate);
                    // Navigator.pop(context)
                     //記錄下用戶選擇的時間 ------> 存入數據庫
