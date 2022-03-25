@@ -359,86 +359,62 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   Widget buildList() {
     //items = await getItemName();
     return FutureBuilder(
-      future: getItemName(), 
-      builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
+      future: Future.wait([
+        getItemName(),
+        getItemExpireingTime(),
+        getItemQuanNum(),
+        getItemQuanType(),
+        getItemCategory(),
+        getItemBoughtTime(),
+      ]),
+      builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
         if (!snapshot.hasData) return const Text('Loading...'); // still loading
         // alternatively use snapshot.connectionState != ConnectionState.done
         if(snapshot.hasError) return const Text('Something went wrong.');
-        final List<String> items = snapshot.requireData;
-
-    
-        return FutureBuilder(
-          future: getItemExpireingTime() ,
-          builder: (BuildContext context, AsyncSnapshot<List<DateTime>> snapshot) {
-          if (!snapshot.hasData) return const Text('Loading...'); // still loading
-          // alternatively use snapshot.connectionState != ConnectionState.done
-          if (snapshot.hasError) return const Text('Something went wrong.');
-          final List<DateTime> expires = snapshot.requireData;
-          print(expires);
-          if (items.length < 1) {
-            return Center(
-              child: Text("Nothing yet...",
+        final List<String> items = snapshot.requireData[0];
+        final List<DateTime> expires = snapshot.requireData[1];
+        if (items.length < 1) {
+          return Center(
+            child: Text("Nothing yet...",
                 style: TextStyle(
                   fontSize: 20,
                 ),
-              ),
-            );
-          }
+            ),
+          );
+        }
+        final List<int> num = snapshot.requireData[2];
+        final List<String> type = snapshot.requireData[3];
+        final List<String> categoryies = snapshot.requireData[4];
+        final List<DateTime> boughtTime = snapshot.requireData[5];
+        return ListTileTheme(
+          contentPadding: EdgeInsets.all(15),
+          textColor: Colors.black54,
+          style: ListTileStyle.list,
+          dense: true,
+          child: ListView.builder(
+            itemCount: items.length,
+            itemBuilder: (context, index) {
+            var item = items[index];
+            //how to show the quantity tyoe and quantity number?
 
-          return FutureBuilder(future: getItemQuanNum(), builder: (BuildContext context, AsyncSnapshot<List<int>> snapshot) {
-            if (!snapshot.hasData) return const Text('Loading...'); // still loading
-            // alternatively use snapshot.connectionState != ConnectionState.done
-            if (snapshot.hasError) return const Text('Something went wrong.');
-            final List<int> num = snapshot.requireData;
-            return FutureBuilder(future: getItemQuanType(), builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
-              if (!snapshot.hasData) return const Text('Loading...'); // still loading
-              // alternatively use snapshot.connectionState != ConnectionState.done
-              if (snapshot.hasError) return const Text('Something went wrong.');
-              final List<String> type = snapshot.requireData;
-              return FutureBuilder(future: getItemCategory(), builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
-                if (!snapshot.hasData) return const Text('Loading...'); // still loading
-                // alternatively use snapshot.connectionState != ConnectionState.done
-                if (snapshot.hasError) return const Text('Something went wrong.');
-                final List<String> categoryies = snapshot.requireData;
-                return FutureBuilder(future: getItemBoughtTime(), builder: (BuildContext context, AsyncSnapshot<List<DateTime>> snapshot) {
-                  if (!snapshot.hasData) return const Text('Loading...'); // still loading
-                  // alternatively use snapshot.connectionState != ConnectionState.done
-                  if (snapshot.hasError) return const Text('Something went wrong.');
-                  final List<DateTime> boughtTime = snapshot.requireData;
-                  return ListTileTheme(
-                    contentPadding: EdgeInsets.all(15),
-                    textColor: Colors.black54,
-                    style: ListTileStyle.list,
-                    dense: true,
-                    child: ListView.builder(
-                      itemCount: items.length,
-                      itemBuilder: (context, index) {
-                        var item = items[index];
-                        //how to show the quantity tyoe and quantity number?
-
-                          //var expires = getItemExpireingTime();
-                        var expire = expires[index];
+            //var expires = getItemExpireingTime();
+            var expire = expires[index];
                         //how to show the listsby sequence of expire time?
-                        final sortedItems = expires.reversed.toList();
-                        expire = sortedItems[index];
-                        var remainDays = expires[index].difference(timeNowDate).inDays;
-                        var progressPercentage = remainDays/(expires[index].difference(boughtTime[index]).inDays);
-                        var foodNum = num[index];
-                        var foodType = type[index];
+            final sortedItems = expires.reversed.toList();
+            expire = sortedItems[index];
+            var remainDays = expires[index].difference(timeNowDate).inDays;
+            var progressPercentage = remainDays/(expires[index].difference(boughtTime[index]).inDays);
+            var foodNum = num[index];
+            var foodType = type[index];
 
-                          var category = categoryies[index];
+            var category = categoryies[index];
 
-                          return buildItem(item, remainDays, foodNum, foodType, index, category, progressPercentage);
-                      }
-                )
-            );
-            });
-          });
-          });
-          });
-        });
+            return buildItem(item, remainDays, foodNum, foodType, index, category, progressPercentage);
+            }
+          )
+        );
       }
-    );   
+    );
   }
   
 
