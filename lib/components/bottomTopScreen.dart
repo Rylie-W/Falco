@@ -139,6 +139,16 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
 
   }
 
+   Future<List<dynamic>> getAllFoods() async {
+    //await insertItem();
+
+    //get all foods name as a list of string
+    List<dynamic> items = await dbhelper.queryAll('foods');
+    //print('##################################first######################################');
+    //print(items);
+
+    return items;
+  }
 
   Future<List<String>> getItemName() async {
     //await insertItem();
@@ -221,7 +231,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
 
   Future<void> deleteItem(String value) async{
       //items = await getItemName();
-      dbhelper.deleteFood(value);
+      await dbhelper.deleteFood(value);
 
   }
 
@@ -251,8 +261,19 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
       var foodName = await dbhelper.getAllUncosumedFoodStringValues('name');
       if(expiretime[i] < timeNow){
         dbhelper.updateFoodWaste(foodName[i]);
+        print('###########################${foodName[i]} is wasted###########################');
       }
     }
+     for(int i = 0; i <= foods.length ; i++ ){
+      var expiretime = await dbhelper.getAllUncosumedFoodIntValues('expiretime');
+      var foodName = await dbhelper.getAllUncosumedFoodStringValues('name');
+      int remainDays = DateTime.fromMillisecondsSinceEpoch(expiretime[i]).difference(timeNowDate).inDays;
+      if(remainDays < 2){
+        //pop up a toast
+        print('###########################${foodName[i]} is expiring!!!###########################');
+      }
+    }
+
   }
 
   //edit the state to 'consumed' and consumestate to 1, and user positive data adds 1
@@ -347,14 +368,6 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
     );
   }
 
-  void pushAddItemPage() {
-    //String date = dateToday.toString().substring(0, 10);
-    // Color color = Theme.of(context).primaryColor;
-    // Navigator.of(context).push(
-    //     MaterialPageRoute(builder: (context) => InputPage())
-    // );
-
-  }
 
   Widget buildList() {
     //items = await getItemName();
@@ -550,10 +563,10 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
             //builder: (BuildContext index) => itemDetailPage();
             pushItemDetailScreen(index, text);
           },
-          onLongPress: () {
+          onLongPress: () async {
             //長按卡片刪除
-            deleteItem(text);
-            buildList();
+            await deleteItem(text);
+            print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%${await getAllFoods()}%%%%%%%%%%%%%%%%%%%%%%%%');
           },
         ),
       ),
