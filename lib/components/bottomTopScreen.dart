@@ -48,11 +48,12 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   Map<String, String> GlobalCateIconMap = {
     "SeaFood": "assets/category/seafood.png",
     "Meat": "assets/category/meat.png",
-    "Milk": "assets/category/seafood.png",
-    "MilkProduct": "assets/category/seafood.png",
+    "Milk": "assets/category/milk.png",
+    "MilkProduct": "assets/category/cheese.png",
     "Fruits": "assets/category/fruits.png",
+    "Egg": "assets/category/egg.png",
     "Vegetable": "assets/category/vegetable.png",
-    "Others": "assets/category/meat.png"
+    "Others": "assets/category/others.png"
   };
 
   String foodName = '';
@@ -114,7 +115,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
        //Insert a new Food butter
       var butter = Food(name: 'butter', category: 'MilkProduct', boughttime: 154893, expiretime: 156432, quantitytype: 'pieces', quantitynum: 3, consumestate: 0.50, state: 'good'); 
       await dbhelper.insertFood(butter);
-      var egg = Food(name: 'eggs', category: 'Meat', boughttime: 134554, expiretime: 1654757, quantitytype: 'number', quantitynum: 4, consumestate: 0, state: 'good');
+      var egg = Food(name: 'eggs', category: 'Egg', boughttime: 134554, expiretime: 1654757, quantitytype: 'number', quantitynum: 4, consumestate: 0, state: 'good');
       await dbhelper.insertFood(egg);
 
       //await dbhelper.testDB();
@@ -149,6 +150,17 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
     return items;
   }
 
+  Future<List<String>> getItemCategory() async {
+    //await insertItem();
+
+    //get all foods name as a list of string
+    List<String> category = await dbhelper.getAllUncosumedFoodStringValues('category');
+    //print('##################################first######################################');
+    //print(items);
+
+    return category;
+  }
+
 
   Future<List<int>> getItemQuanNum() async{
     //get all foods quantity number as a list of integers
@@ -165,17 +177,15 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   }
 
    Future<List<DateTime>> getItemExpireingTime() async{
-    //get all foods quantity number as a list of integers
     List<int> expire = await dbhelper.getAllUncosumedFoodIntValues('expiretime') ;
-    //var maxID = await dbhelper.getMaxId() + 1;
-
-    //int index = 0;
-    //Convert the List<int> into a List<DateTime>/ timestamp ----->  DateTime
     var expireDate = List<DateTime>.generate(expire.length, (i) => DateTime.fromMillisecondsSinceEpoch(expire[i]));
-    print('#########################$expireDate##################');
-    //print('############################################second##########################');
-    //print(expire);
     return expireDate;
+  }
+
+  Future<List<DateTime>> getItemBoughtTime() async{
+    List<int> boughttime = await dbhelper.getAllUncosumedFoodIntValues('boughttime') ;
+    var boughtDate = List<DateTime>.generate(boughttime.length, (i) => DateTime.fromMillisecondsSinceEpoch(boughttime[i]));
+    return boughtDate;
   }
 
   Future<void> addItemName(value) async {
@@ -365,53 +375,69 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
               // alternatively use snapshot.connectionState != ConnectionState.done
               if (snapshot.hasError) return const Text('Something went wrong.');
               final List<String> type = snapshot.requireData;
-              return ListTileTheme(
-                contentPadding: EdgeInsets.all(15),
-                textColor: Colors.black54,
-                style: ListTileStyle.list,
-                dense: true,
-                child: ListView.builder(
-                    itemCount: items.length,
-                    itemBuilder: (context, index) {
-                      var item = items[index];
-                      //how to show the quantity tyoe and quantity number?
+              return FutureBuilder(future: getItemCategory(), builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
+                if (!snapshot.hasData) return const Text('Loading...'); // still loading
+                // alternatively use snapshot.connectionState != ConnectionState.done
+                if (snapshot.hasError) return const Text('Something went wrong.');
+                final List<String> categoryies = snapshot.requireData;
+                return FutureBuilder(future: getItemBoughtTime(), builder: (BuildContext context, AsyncSnapshot<List<DateTime>> snapshot) {
+                  if (!snapshot.hasData) return const Text('Loading...'); // still loading
+                  // alternatively use snapshot.connectionState != ConnectionState.done
+                  if (snapshot.hasError) return const Text('Something went wrong.');
+                  final List<DateTime> boughtTime = snapshot.requireData;
+                  return ListTileTheme(
+                    contentPadding: EdgeInsets.all(15),
+                    textColor: Colors.black54,
+                    style: ListTileStyle.list,
+                    dense: true,
+                    child: ListView.builder(
+                      itemCount: items.length,
+                      itemBuilder: (context, index) {
+                        var item = items[index];
+                        //how to show the quantity tyoe and quantity number?
 
-                      //var expires = getItemExpireingTime();
-                      var expire = expires[index];
-                      //how to show the listsby sequence of expire time?
-                      final sortedItems = expires.reversed.toList();
-                      expire = sortedItems[index];
-                      var remainDays = expires[index].difference(timeNowDate).inDays;
+                          //var expires = getItemExpireingTime();
+                        var expire = expires[index];
+                        //how to show the listsby sequence of expire time?
+                        final sortedItems = expires.reversed.toList();
+                        expire = sortedItems[index];
+                        var remainDays = expires[index].difference(timeNowDate).inDays;
+                        var progressPercentage = remainDays/(expires[index].difference(boughtTime[index]).inDays);
+                        var foodNum = num[index];
+                        var foodType = type[index];
 
-                      var foodNum = num[index];
-                      var foodType = type[index];
+                          var category = categoryies[index];
 
-                      return buildItem(item, remainDays, foodNum, foodType, index);
-                    }
+                          return buildItem(item, remainDays, foodNum, foodType, index, category, progressPercentage);
+                      }
                 )
             );
             });
           });
-
-
+          });
+          });
         });
       }
     );   
   }
   
 
-  Widget buildItem(String text, int expire, int foodNum, String foodType, int index) {
+  Widget buildItem(String text, int expire, int foodNum, String foodType, int index, String category, double progressPercentage ) {
     var categoryIconImagePath = null;
-    if(GlobalCateIconMap[text] == null) {
+    var progressColor = null;
+    if(GlobalCateIconMap[category] == null) {
       categoryIconImagePath = GlobalCateIconMap["Others"];
     } else {
-      print(GlobalCateIconMap.values);
-      print(GlobalCateIconMap[text]);
-      print(text);
-      print("not null");
-      categoryIconImagePath = GlobalCateIconMap[text];
-      print("milk exception");
-      print(categoryIconImagePath);
+      categoryIconImagePath = GlobalCateIconMap[category];
+    };
+    if(progressPercentage > 0 && progressPercentage < 49) {
+      progressColor = Colors.green;
+    } else if (progressPercentage >= 49 && progressPercentage < 66) {
+      progressColor = Colors.yellow;
+    } else if (progressPercentage >= 49 && progressPercentage < 66) {
+      progressColor = Colors.red;
+    } else {
+      progressColor = Colors.black;
     };
     return Card(
       elevation: 3,
@@ -470,7 +496,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                 updateUserValue('positive');
                 buildList();
               },
-              backgroundColor: Color(0xFF7BC043),
+              backgroundColor: progressColor,
               foregroundColor: Colors.white,
               icon: Icons.archive,
               label: 'Comsumed',
@@ -762,158 +788,6 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
         )
     );
   }
-  /*
-            body: Column(children: <Widget> [
-               TextField(
-                  autofocus: false,
-                  //focusNode: focusNode1,
-                  decoration: InputDecoration(
-                      hintText: 'e.g. Eggs',
-                      contentPadding: EdgeInsets.all(16),
-                      labelText: "Food Name",
-                      prefixIcon: Icon(Icons.food_bank)
-                  ),
-                  Padding(
-                      padding: EdgeInsets.symmetric(horizontal: padding),
-                      child: TextField(
-                          style: TextStyle(
-                            fontFamily: 'Roboto',
-                            fontSize: 24,
-                          ),
-                          autofocus: false,
-                          onTap: () {
-                            FocusScope.of(context).requestFocus(new FocusNode());
-                            showCupertinoModalPopup(
-                                context: context,
-                                builder: (context) {
-                                  return Container(
-                                    height: 200,
-                                    color: Colors.grey,
-                                    child: Row(
-                                      children: [
-                                        Expanded(child: CupertinoPicker(
-                                            itemExtent: 32.0,
-                                            onSelectedItemChanged: (value) {
-                                              setState(() {
-                                                categoryController.text = Category[value];
-                                              });
-                                            },
-                                            children: categortyList
-                                        ),
-                                        )
-                                      ],
-                                    ),
-                                  );
-                                }
-                            );
-                          },
-                          //focusNode: focusNode2,
-                          decoration: InputDecoration(
-                              hintText: 'choose correspoding category...',
-                              contentPadding: EdgeInsets.all(16),
-                              labelText: "Category",
-                              prefixIcon: Icon(Icons.food_bank)
-                          ),
-                          controller: categoryController,
-                          obscureText: false
-                      ),
-                  ),
-
-                TextField(
-                  autofocus: true,
-                  //focusNode: focusNode2,
-                  decoration: InputDecoration(
-                      hintText: 'add remaining expire time',
-                      contentPadding: EdgeInsets.all(16),
-                      labelText: "Expire On",
-                      prefixIcon: Icon(Icons.food_bank)
-                  ),
-                  controller: expireTimeController,
-                  obscureText: true
-                ),
-                TextField(
-                  autofocus: true,
-                  //focusNode: focusNode2,
-                  decoration: InputDecoration(
-                      hintText: 'Quantity',
-                      contentPadding: EdgeInsets.all(16),
-                      labelText: "Quantity Number",
-                      prefixIcon: Icon(Icons.food_bank)
-                  ),
-                  controller: quanNumController,
-                  obscureText: true
-                ),
-                TextField(
-                  autofocus: true,
-                  //focusNode: focusNode2,
-                  decoration: InputDecoration(
-                      hintText: 'Quantity',
-                      contentPadding: EdgeInsets.all(16),
-                      labelText: "Quantity Type",
-                      prefixIcon: Icon(Icons.food_bank)
-                  ),
-                  controller: quanTypeController,
-                  obscureText: true
-                )
-                FloatingActionButton(
-                  //When the user press this button, add user inputs into the database 
-                  //and add to the previous ListView
-                  onPressed:() async {
-
-                    //convert string to int
-                    try{
-                      //用戶不需要輸入購買時間，直接默認為用戶第一次添加事物的當前時間
-                      var boughttime = timeNow;
-                      var quantityNum = int.parse(quanNumController.text);
-
-                      //接上InputPage裏DateTime時間組件，再轉化成timestamp存進數據庫
-                      var expiretime = int.parse(expireTimeController.text);
-
-                      //add item name and expiretime to show in the ListView
-                    //and then
-                    DateTime ExpireDays = DateTime.fromMillisecondsSinceEpoch(expiretime);
-                    var remainExpireDays = ExpireDays.difference(timeNowDate).inDays;
-                    addItemExpi(remainExpireDays);
-                    addItemName(nameController.text);
-
-                    //Calculate the current state of the new food
-                    //well actually i should assume the state of a new food should always be good, unless the user is an idiot
-                    //But i'm going to do the calculation anyway
-                    
-                    //insert new data into database
-                    insertDB(nameController.text, categoryController.text, boughttime, expiretime, quanTypeController.text, quantityNum, 'good', 0.0);
-                    print(dbhelper.queryAll('foods'));
-
-                    //user positive value add 1
-                    updateUserValue("positive");
-                    var user1 = await dbhelper.queryAll('users');
-                    String check = checkIfPrimaryStateChanged(user1[0].positive-user1[0].negative);
-                    if (check!='None'){
-                      showAchievementDialog(check);
-                    }
-
-                    } on FormatException{
-                      print('Format Error!');
-                    }
-
-                     // close route
-                    // when push is used, it pushes new item on stack of navigator
-                     // simply pop off stack and it goes back
-                    Navigator.pop(context);
-                    buildList();
-                  },
-                  tooltip: 'Add food',
-                  child: const Icon(Icons.add),
-                ),
-                ],
-
-                )
-              );          
-            }
-        )
-    );
-  }
-*/
 
   // button list for expiring date (only button)
   ElevatedButton _buildButtonColumn1(Color color, int value) {

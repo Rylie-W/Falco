@@ -93,6 +93,10 @@ flutter:
     - assets/category/seafood.png
     - assets/category/meat.png
     - assets/category/vegetable.png
+    - assets/category/milk.png
+    - assets/category/egg.png
+    - assets/category/cheese.png
+    - assets/category/others.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
