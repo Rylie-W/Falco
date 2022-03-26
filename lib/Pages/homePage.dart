@@ -96,61 +96,6 @@ class _HomePageState extends State<HomePage> {
     print(await dbhelper.queryAll("users"));
   }
 
-  Future<Null> _pickImage() async {
-    final pickedImage =
-    await ImagePicker().pickImage(source: ImageSource.gallery);
-    imageFile = pickedImage != null ? File(pickedImage.path) : null;
-    if (imageFile != null) {
-      setState(() {
-        state = AppState.picked;
-      });
-    }
-  }
-
-  Future<Null> _cropImage() async {
-    File? croppedFile = await ImageCropper().cropImage(
-        sourcePath: imageFile!.path,
-        aspectRatioPresets: Platform.isAndroid
-            ? [
-          CropAspectRatioPreset.square,
-          CropAspectRatioPreset.ratio3x2,
-          CropAspectRatioPreset.original,
-          CropAspectRatioPreset.ratio4x3,
-          CropAspectRatioPreset.ratio16x9
-        ]
-            : [
-          CropAspectRatioPreset.original,
-          CropAspectRatioPreset.square,
-          CropAspectRatioPreset.ratio3x2,
-          CropAspectRatioPreset.ratio4x3,
-          CropAspectRatioPreset.ratio5x3,
-          CropAspectRatioPreset.ratio5x4,
-          CropAspectRatioPreset.ratio7x5,
-          CropAspectRatioPreset.ratio16x9
-        ],
-        androidUiSettings: AndroidUiSettings(
-            toolbarTitle: 'Cropper',
-            toolbarColor: Colors.deepOrange,
-            toolbarWidgetColor: Colors.white,
-            initAspectRatio: CropAspectRatioPreset.original,
-            lockAspectRatio: false),
-        iosUiSettings: IOSUiSettings(
-          title: 'Cropper',
-        ));
-    if (croppedFile != null) {
-      imageFile = croppedFile;
-      setState(() {
-        state = AppState.cropped;
-      });
-    }
-  }
-
-  void _clearImage() {
-    imageFile = null;
-    setState(() {
-      state = AppState.free;
-    });
-  }
 
   Future pickImage(bool isCamera) async {
     var image;
@@ -159,29 +104,8 @@ class _HomePageState extends State<HomePage> {
     } else {
       image = await ImagePicker().pickImage(source: ImageSource.gallery);
     }
-    //cropper
-    File? croppedFile = await ImageCropper().cropImage(
-        sourcePath: imageFile.path,
-        aspectRatioPresets: [
-          CropAspectRatioPreset.square,
-          CropAspectRatioPreset.ratio3x2,
-          CropAspectRatioPreset.original,
-          CropAspectRatioPreset.ratio4x3,
-          CropAspectRatioPreset.ratio16x9
-        ],
-        androidUiSettings: AndroidUiSettings(
-            toolbarTitle: 'Cropper',
-            toolbarColor: Colors.deepOrange,
-            toolbarWidgetColor: Colors.white,
-            initAspectRatio: CropAspectRatioPreset.original,
-            lockAspectRatio: false),
-        iosUiSettings: IOSUiSettings(
-          minimumAspectRatio: 1.0,
-        )
-    );
     if (image == null) return;
     setState(() {
-      imagePath = croppedFile.path;
       imageFile = File(image.path);
       imageData = base64Encode(imageFile.readAsBytesSync());
     });
