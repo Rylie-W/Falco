@@ -193,32 +193,14 @@ class _HomePageState extends State<HomePage> {
     print(await dbhelper.queryAll('foods'));
   }
 
-  SMITrigger? _tap;
-
-  void _onRiveInit(Artboard artboard) {
-    final controller = StateMachineController.fromArtboard(artboard, 'Tap');
-    artboard.addController(controller!);
-    _tap = controller.findInput<SMITrigger>('Tap') as SMITrigger;
-  }
-
-  void _hittap() => _tap?.fire();
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         floatingActionButton:
             Column(mainAxisAlignment: MainAxisAlignment.end, children: [
               FloatingActionButton(
-                child: Icon(Icons.add),
-                onPressed: () {},
-                heroTag: null,
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              FloatingActionButton(
                 backgroundColor: Color.fromRGBO(178,207, 135, 0.8),
-                child: Icon(Icons.photo_album),
+                child: Icon(Icons.photo_album, color: Colors.white,),
                 onPressed: () => pickImage(false),
                 heroTag: null,
               ),
@@ -227,7 +209,7 @@ class _HomePageState extends State<HomePage> {
               ),
               FloatingActionButton(
                 backgroundColor: Color.fromRGBO(178,207, 135, 0.8),
-                child: Icon(Icons.camera_alt),
+                child: Icon(Icons.camera_alt, color: Colors.white),
                 onPressed: () => pickImage(true),
                 heroTag: null,
               )
@@ -246,9 +228,7 @@ class _HomePageState extends State<HomePage> {
               child: GestureDetector(
                 child: RiveAnimation.asset(
                   'assets/anime/fly.riv',
-                  onInit: _onRiveInit,
                 ),
-                onTap: _hittap,
               ),
             ),
           ],
