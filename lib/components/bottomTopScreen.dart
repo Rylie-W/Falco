@@ -256,6 +256,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
 
      }
   }
+  
 
   //when to call this function? At a certain time evey day.
   Future<void> autocheckWaste() async{
@@ -509,6 +510,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
               onPressed: (BuildContext context) async {
                 await updateFoodState( text, 'wasted');
                 await updateUserValue('negative');
+                items.removeAt(index);
                 // var user1 = await getAllItems('users');
                 // print('#########${user1[0].primarystate}#############');
 ;              },

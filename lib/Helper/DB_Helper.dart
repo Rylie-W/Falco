@@ -337,8 +337,22 @@ class DBHelper{
     return foodstring;
 
   }
+          //Define method that retrieves all the foods from food table
+  Future<List<String>> getAllGoodFoodStringValues(String value, String state) async {
+    //Get a reference to the database.
+    Database dbHelper = await db; 
+    //Query table for all the foods.
+   
+    final List<Map<String, dynamic>> maps = await dbHelper.query('foods', columns: [value], where: 'state = ?', whereArgs: [state]);
 
-         //Define method that retrieves all the foods from food table
+    //Convert the List<Map<String, dynamic> into a List<String>
+    var foodstring = List<String>.generate(maps.length, (i) => maps[i][value]);
+
+    return foodstring;
+
+  }
+
+  //Define method that retrieves all the foods from food table
   Future<List<int>> getAllUncosumedFoodIntValues(String value) async {
     //Get a reference to the database.
     Database dbHelper = await db; 
@@ -352,13 +366,51 @@ class DBHelper{
     return foodsint;
 
   }
+  //Define method that retrieves all the foods with certain state from food table
+  Future<List<int>> getAllGoodFoodIntValues(String value, String state) async {
+    //Get a reference to the database.
+    Database dbHelper = await db; 
+    //Query table for all the foods.
+   
+    final List<Map<String, dynamic>> maps = await dbHelper.query('foods', columns: [value], where: '"state" = ?', whereArgs: [state]);
 
-    Future<List<Food>> queryAllUnconsumedFood() async{
+    //Convert the List<Map<String, dynamic> into a List<String>
+    var foodsint = List<int>.generate(maps.length, (i) => maps[i][value]);
+
+    return foodsint;
+
+  }
+
+  Future<List<Food>> queryAllUnconsumedFood() async{
     //Get the refernce to the database
     Database dbHelper = await db;
 
     //final List<Map<String, dynamic>> maps = await dbHelper.query('foods',columns: ['name', 'expiretime', 'boughttime', 'quantitynum', 'quantitytype', 'state', 'consumestate'], where: '$category = ?', whereArgs: [category]);
     final List<Map<String, dynamic>> maps = await dbHelper.rawQuery('SELECT * FROM foods WHERE consumestate < ?', [1]);
+
+    //Convert the List<Map<String, dynamic> into a List
+
+      return List.generate(maps.length, (i) {
+        return Food(
+          //id: maps[i]['id'],
+          name: maps[i]['name'],
+          category: maps[i]['category'],
+          boughttime: maps[i]['boughttime'],
+          expiretime: maps[i]['expiretime'],
+          quantitynum: maps[i]['quantitynum'],
+          quantitytype: maps[i]['quantitytype'],
+          state: maps[i]['state'],
+          consumestate: maps[i]['consumestate'],
+        );
+      });
+  } 
+
+  Future<List<Food>> queryAllGoodFood(String state) async{
+    //Get the refernce to the database
+    Database dbHelper = await db;
+
+    //final List<Map<String, dynamic>> maps = await dbHelper.query('foods',columns: ['name', 'expiretime', 'boughttime', 'quantitynum', 'quantitytype', 'state', 'consumestate'], where: '$category = ?', whereArgs: [category]);
+    final List<Map<String, dynamic>> maps = await dbHelper.rawQuery('SELECT * FROM foods WHERE state = ?', [state]);
 
     //Convert the List<Map<String, dynamic> into a List
 

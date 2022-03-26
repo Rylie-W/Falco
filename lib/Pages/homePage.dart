@@ -28,6 +28,9 @@ class _HomePageState extends State<HomePage> {
   //Create Databse Object
   DBHelper dbhelper = DBHelper();
 
+  
+ 
+
   //check the primary state of uservalue should be updated or not; if so, update to the latest
   Future<void> updatePrimaryState() async {
     var user1 = await dbhelper.queryAll('users');
@@ -83,7 +86,7 @@ class _HomePageState extends State<HomePage> {
         negative: user1[0].negative,
         positive: user1[0].positive + 2,
         primarystate: user1[0].primarystate,
-        secondarystate: 'satisfied',
+        secondarystate: 'false',
         secondaryevent: "single",
         thirdstate: "move",
         species: "folca",
