@@ -419,11 +419,16 @@ class DBHelper{
   }
 
     //Define method that updates user data 
-  Future<void> updateUserPrimary(String newState) async{
+  Future<void> updateUserPrimary(String primaryState) async{
     //Get the reference to the database
     Database dbHelper = await db;
-    
-    await dbHelper.rawUpdate('UPDATE users SET primarystate = ?', [newState]);
+    await dbHelper.rawUpdate('UPDATE users SET primarystate = ?', [primaryState]);
+  }
+
+  Future<void> updateUserSecondary(String secondaryState) async{
+    //Get the reference to the database
+    Database dbHelper = await db;
+    await dbHelper.rawUpdate('UPDATE users SET secondarystate = ?', [secondaryState]);
   }
 
   //Define method to delete food

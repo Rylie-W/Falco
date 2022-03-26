@@ -18,6 +18,21 @@ class Achievements extends StatelessWidget{
   "mystery 3":11,
   };
 
+  static const List stateList =[
+    "initialization",
+    "encounter",
+    "mate",
+    "nest",
+    "hatch",
+    "learn",
+    "leavehome",
+    "snow owl",
+    "tawny owl",
+    "mystery 1",
+    "mystery 2",
+    "mystery 3",
+  ];
+
   static const List<String> imageList= [
     "assets/achievements/initialization.png",
     "assets/achievements/first_encounter.png",
@@ -53,6 +68,7 @@ class Achievements extends StatelessWidget{
   DBHelper dbHelper=DBHelper();
   late double width;
   late double height;
+  late BuildContext context;
 
   static const ColorFilter _greyscaleFilter = ColorFilter.matrix(
     <double>[
@@ -73,6 +89,7 @@ class Achievements extends StatelessWidget{
   Widget build(BuildContext context){
     this.width = MediaQuery.of(context).size.width;
     this.height = MediaQuery.of(context).size.height;
+    this.context = context;
 
     return FutureBuilder(
       future: getIntSate(),
@@ -381,10 +398,47 @@ class Achievements extends StatelessWidget{
 
   Future<String> getPrimaryState() async{
     List userValues = await dbHelper.queryAll("users");
-    print("============================");
     print(userValues[0].positive-userValues[0].negative);
+    if (userValues[0].secondarystate == "false"){
+      showAchievementDialog(userValues[0].primarystate);
+    }
+    dbHelper.updateUserSecondary("true");
     String primaryState = userValues[0].primarystate;
     return primaryState;
   }
 
+
+  showAchievementDialog(String state){
+    double width= MediaQuery.of(context).size.width;
+    double height= MediaQuery.of(context).size.height;
+    int stateIndex= Achievements.stateMap[state]??-1;
+    AlertDialog dialog = AlertDialog(
+      title: stateIndex > -1? const Text("CONGRATULATIONS!",textAlign: TextAlign.center): const Text("OOPS",textAlign: TextAlign.center),
+      content:
+      new Container(
+        width: 3*width/5,
+        height: height/3,
+        padding: const EdgeInsets.all(10.0),
+        child:
+        new Column(
+          children: [
+            Expanded(child: stateIndex>-1? Image.asset(imageList[stateIndex]):Image.asset(imageList[12])),
+            Text(
+                stateIndex>-1?achievementNameList[stateIndex]:"Something goes wrong...",
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontWeight: FontWeight.bold))
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, 'OK'),
+          child: const Text('OK'),
+        ),
+      ],
+    );
+    showDialog(context: context, builder: (BuildContext context){
+      return dialog;
+    });
+  }
 }

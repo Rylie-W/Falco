@@ -69,10 +69,12 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   List food = ['name', '', -1, -1, '', -1, -1.0, ''];
 
   //check the primary state of uservalue should be updated or not; if so, update to the latest
-  Future<void> updatePrimaryState() async{
+  Future<void> updateStates() async{
     var user1 = await dbhelper.queryAll('users');
     int value = user1[0].positive - user1[0].negative;
     String primaryState;
+    String check = checkIfPrimaryStateChanged(value);
+    String secondaryState = user1[0].secondarystate;
 
     if (value < 2){
       primaryState='initialization';
@@ -103,12 +105,17 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
       primaryState='leavehome';
       await dbhelper.updateUserPrimary(primaryState);
     }
-    else if(value > 82 && value <= 91){
-      primaryState='snow owl';
+    else if(value > 82 && value <= 91) {
+      primaryState = 'snow owl';
       await dbhelper.updateUserPrimary(primaryState);
     }
     else if(value > 91 && value <= 100){
       primaryState='tawny owl';
+      await dbhelper.updateUserPrimary(primaryState);
+    }
+
+    if (secondaryState=="true"&&check!="None"){
+        await dbhelper.updateUserSecondary("false");
     }
   }
   
@@ -286,44 +293,47 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
 
     if(state == 'positive'){
       //judge the primary state
-      var uservalue = UserValue(name: user1[0].name, negative: user1[0].negative, positive: user1[0].positive + 1, primarystate: user1[0].primarystate, secondarystate: 'satisfied', secondaryevent: "single", thirdstate: "move", species: "folca", childrennum: 0, fatherstate: "single", motherstate: "single", time: timeNow);    
+      var uservalue = UserValue(name: user1[0].name, negative: user1[0].negative, positive: user1[0].positive + 1, primarystate: user1[0].primarystate, secondarystate: 'true', secondaryevent: "single", thirdstate: "move", species: "folca", childrennum: 0, fatherstate: "single", motherstate: "single", time: timeNow);
       await dbhelper.updateUser(uservalue);
-      await updatePrimaryState();
+      await updateStates();
       print(await dbhelper.queryAll("users"));
       }
     else{
-      var uservalue = UserValue(name: user1[0].name, negative: user1[0].negative + 1, positive: user1[0].positive, primarystate: user1[0].primarystate, secondarystate: 'satisfied', secondaryevent: "single", thirdstate: "move", species: "folca", childrennum: 0, fatherstate: "single", motherstate: "single", time: timeNow);    
+      var uservalue = UserValue(name: user1[0].name, negative: user1[0].negative + 1, positive: user1[0].positive, primarystate: user1[0].primarystate, secondarystate: 'true', secondaryevent: "single", thirdstate: "move", species: "folca", childrennum: 0, fatherstate: "single", motherstate: "single", time: timeNow);
       await dbhelper.updateUser(uservalue);
-      await updatePrimaryState();
+      await updateStates();
       print(await dbhelper.queryAll("users"));
     }
 
   }
 
   String checkIfPrimaryStateChanged(int value){
-    if (value==2){
-      return Achievements.achievementNameList[1];
+    if (value==0){
+      return Achievements.stateList[0];
+    }
+    else if (value==2){
+      return Achievements.stateList[1];
     }
     else if (value==7){
-      return Achievements.achievementNameList[2];
+      return Achievements.stateList[2];
     }
     else if (value==15){
-      return Achievements.achievementNameList[3];
+      return Achievements.stateList[3];
     }
     else if (value==31){
-      return Achievements.achievementNameList[4];
+      return Achievements.stateList[4];
     }
     else if (value==47){
-      return Achievements.achievementNameList[5];
+      return Achievements.stateList[5];
     }
     else if (value==79){
-      return Achievements.achievementNameList[6];
+      return Achievements.stateList[6];
     }
     else if (value==83){
-      return Achievements.achievementNameList[7];
+      return Achievements.stateList[7];
     }
     else if (value==92){
-      return Achievements.achievementNameList[8];
+      return Achievements.stateList[8];
     }
     else{
       return "None";

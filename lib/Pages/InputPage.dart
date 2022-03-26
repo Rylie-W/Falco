@@ -328,6 +328,9 @@ class _InputPageState extends State<InputPage> {
                     //var user1 = dbhelper.queryAll('users');
                     updateUserValue('positive');
                     var user1 = await dbhelper.queryAll('users');
+                    print('#########${user1[0].primarystate}#############');
+                    print(user1[0].positive-user1[0].negative);
+                    print("===========================");
                     String check = checkIfPrimaryStateChanged(user1[0].positive-user1[0].negative);
                     if (check!='None'){
                       showAchievementDialog(check);
