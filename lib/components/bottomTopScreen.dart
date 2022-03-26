@@ -248,7 +248,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
      print(updatedFood);
      if(attribute == 'consumed'){
      //var consumedFoodUpdate = Food(id: id, name: name, category: updatedFood[0].category, boughttime: updatedFood[0].boughttime, expiretime: updatedFood[0].expiretime, quantitytype: updatedFood[0].quantitytype, quantitynum: 0, consumestate: 1.0, state: 'consumed');
-      dbhelper.updateFoodConsumed(name);
+      dbhelper.updateFoodConsumed(name, 'consumed');
      }
      else{
       //var wastedFoodUpdate = Food(id: id, name: name, category: updatedFood[0].category, boughttime: updatedFood[0].boughttime, expiretime: updatedFood[0].expiretime, quantitytype: updatedFood[0].quantitytype, quantitynum: updatedFood[0].quantitynum, consumestate: 1.0, state: 'wasted');
@@ -277,6 +277,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
       int remainDays = DateTime.fromMillisecondsSinceEpoch(expiretime[i]).difference(timeNowDate).inDays;
       if(remainDays < 2){
         //pop up a toast
+        dbhelper.updateFoodConsumed(foodName[i], 'expiring');
         print('###########################${foodName[i]} is expiring!!!###########################');
       }
     }
