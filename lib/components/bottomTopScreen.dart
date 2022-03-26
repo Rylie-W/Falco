@@ -52,7 +52,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
     "Meat": "assets/category/meat.png",
     "Milk": "assets/category/milk.png",
     "Milk Product": "assets/category/cheese.png",
-    "Fruits": "assets/category/fruits.png",
+    "Fruit": "assets/category/fruits.png",
     "Egg": "assets/category/egg.png",
     "Vegetable": "assets/category/vegetable.png",
     "Others": "assets/category/others.png"
