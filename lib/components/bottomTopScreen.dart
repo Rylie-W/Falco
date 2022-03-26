@@ -664,14 +664,6 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
               await updateFoodState(text, 'consumed');
               await updateUserValue('positive');
               items.removeAt(index);
-              var user1 = await getAllItems('users');
-              print('#########${user1[0].primarystate}#############');
-              print(user1[0].positive-user1[0].negative);
-              print("===========================");
-              String check = checkIfPrimaryStateChanged(user1[0].positive-user1[0].negative);
-              if (check!='None'){
-                showAchievementDialog(check);
-              }
             });
           }),
           children: [
@@ -682,15 +674,6 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
 
                 await updateFoodState( text, 'consumed');
                 await updateUserValue('positive');
-                var user1 = await getAllItems('users');
-                print('#########${user1[0].primarystate}#############');
-                print(user1[0].positive-user1[0].negative);
-                print("===========================");
-                String check = checkIfPrimaryStateChanged(user1[0].positive-user1[0].negative);
-                print(check);
-                if (check!='None'){
-                showAchievementDialog(check);
-                }
                 items.removeAt(index);
                 //buildList();
               },
