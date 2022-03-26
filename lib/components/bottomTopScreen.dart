@@ -47,7 +47,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   //FocusScopeNode? focusScopeNode;
 
   Map<String, String> GlobalCateIconMap = {
-    "SeaFood": "assets/category/seafood.png",
+    "Sea Food": "assets/category/seafood.png",
     "Meat": "assets/category/meat.png",
     "Milk": "assets/category/milk.png",
     "Milk Product": "assets/category/cheese.png",
@@ -114,9 +114,9 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   
   Future<void> insertItem() async{
        //Insert a new Food butter
-      var butter = Food(name: 'butter', category: 'Milk Product', boughttime: 154893, expiretime: 156432, quantitytype: 'pieces', quantitynum: 3, consumestate: 0.50, state: 'good');
+      var butter = Food(name: 'butter', category: 'Milk Product', boughttime: 154893, expiretime: 156432, quantitytype: 'Piece', quantitynum: 3, consumestate: 0.50, state: 'good');
       await dbhelper.insertFood(butter);
-      var egg = Food(name: 'eggs', category: 'Egg', boughttime: 134554, expiretime: 1654757, quantitytype: 'number', quantitynum: 4, consumestate: 0, state: 'good');
+      var egg = Food(name: 'eggs', category: 'Egg', boughttime: 134554, expiretime: 1654757, quantitytype: 'Number', quantitynum: 4, consumestate: 0, state: 'good');
       await dbhelper.insertFood(egg);
 
       //await dbhelper.testDB();
@@ -664,9 +664,10 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
     List<Widget> categortyList = new List<Widget>.generate(8, (index) => new Text(Category[index]));
     final quanTypes = ["Gram", "Kilogram", "Piece", "Bag", "Bottle", "Number"];
     List<Widget> quanTypeList = new List<Widget>.generate(6, (index) => new Text(quanTypes[index]));
-    final nums = List.generate(20, (index) => index);
-    List<Widget> numList = List.generate(20, (index) => new Text("$index"));
+    final nums = List.generate(10, (index) => index);
+    List<Widget> numList = List.generate(10, (index) => new Text("$index"));
     int quanNum = 0;
+    int quanSmallNum = 0;
     var quanType = "";
     DateTime selectedDate = DateTime.now();
     int expireTimeStamp = 0;
@@ -795,15 +796,30 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                                     child: Row(
                                       children: [
                                         Expanded(
-                                          flex: 3,
+                                          flex: 2,
                                           child:
                                           CupertinoPicker(
                                             itemExtent: 24.0,
                                             onSelectedItemChanged: (value) {
                                               setState(() {
                                                 quanNum = nums[value];
-                                                quanNumController.text = "$quanNum";
-                                                quanNumAndTypeController.text = "$quanNum $quanType";
+                                                quanNumController.text = "$quanNum.$quanSmallNum";
+                                                quanNumAndTypeController.text = "$quanNum.$quanSmallNum $quanType";
+                                              });
+                                            },
+                                            children: numList,
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 2,
+                                          child:
+                                          CupertinoPicker(
+                                            itemExtent: 24.0,
+                                            onSelectedItemChanged: (value) {
+                                              setState(() {
+                                                quanSmallNum = nums[value];
+                                                quanNumController.text = "$quanNum.$quanSmallNum";
+                                                quanNumAndTypeController.text = "$quanNum.$quanSmallNum $quanType";
                                               });
                                             },
                                             children: numList,
@@ -818,7 +834,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                                               setState(() {
                                                 quanTypeController.text = quanTypes[value];
                                                 quanType = quanTypes[value];
-                                                quanNumAndTypeController.text = "$quanNum $quanType";
+                                                quanNumAndTypeController.text = "$quanNum.$quanSmallNum $quanType";
                                               });
                                             },
                                             children: quanTypeList,

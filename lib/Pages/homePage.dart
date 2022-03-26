@@ -3,11 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:rive/rive.dart';
 import 'package:less_waste/Helper/DB_Helper.dart';
-import 'package:less_waste/components/bottomTopScreen.dart';
-
-import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key, this.animationController}) : super(key: key);
@@ -18,6 +16,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+
   // camera related
   late String imagePath;
   late File imageFile;
@@ -87,6 +86,62 @@ class _HomePageState extends State<HomePage> {
 
   }
 
+  Future<Null> _pickImage() async {
+    final pickedImage =
+    await ImagePicker().pickImage(source: ImageSource.gallery);
+    imageFile = pickedImage != null ? File(pickedImage.path) : null;
+    if (imageFile != null) {
+      setState(() {
+        state = AppState.picked;
+      });
+    }
+  }
+
+  Future<Null> _cropImage() async {
+    File? croppedFile = await ImageCropper().cropImage(
+        sourcePath: imageFile!.path,
+        aspectRatioPresets: Platform.isAndroid
+            ? [
+          CropAspectRatioPreset.square,
+          CropAspectRatioPreset.ratio3x2,
+          CropAspectRatioPreset.original,
+          CropAspectRatioPreset.ratio4x3,
+          CropAspectRatioPreset.ratio16x9
+        ]
+            : [
+          CropAspectRatioPreset.original,
+          CropAspectRatioPreset.square,
+          CropAspectRatioPreset.ratio3x2,
+          CropAspectRatioPreset.ratio4x3,
+          CropAspectRatioPreset.ratio5x3,
+          CropAspectRatioPreset.ratio5x4,
+          CropAspectRatioPreset.ratio7x5,
+          CropAspectRatioPreset.ratio16x9
+        ],
+        androidUiSettings: AndroidUiSettings(
+            toolbarTitle: 'Cropper',
+            toolbarColor: Colors.deepOrange,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: false),
+        iosUiSettings: IOSUiSettings(
+          title: 'Cropper',
+        ));
+    if (croppedFile != null) {
+      imageFile = croppedFile;
+      setState(() {
+        state = AppState.cropped;
+      });
+    }
+  }
+
+  void _clearImage() {
+    imageFile = null;
+    setState(() {
+      state = AppState.free;
+    });
+  }
+
   Future pickImage(bool isCamera) async {
     var image;
     if(isCamera == true) {
@@ -94,9 +149,29 @@ class _HomePageState extends State<HomePage> {
     } else {
       image = await ImagePicker().pickImage(source: ImageSource.gallery);
     }
+    //cropper
+    File? croppedFile = await ImageCropper().cropImage(
+        sourcePath: imageFile.path,
+        aspectRatioPresets: [
+          CropAspectRatioPreset.square,
+          CropAspectRatioPreset.ratio3x2,
+          CropAspectRatioPreset.original,
+          CropAspectRatioPreset.ratio4x3,
+          CropAspectRatioPreset.ratio16x9
+        ],
+        androidUiSettings: AndroidUiSettings(
+            toolbarTitle: 'Cropper',
+            toolbarColor: Colors.deepOrange,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: false),
+        iosUiSettings: IOSUiSettings(
+          minimumAspectRatio: 1.0,
+        )
+    );
     if (image == null) return;
     setState(() {
-      imagePath = image.path;
+      imagePath = croppedFile.path;
       imageFile = File(image.path);
       imageData = base64Encode(imageFile.readAsBytesSync());
     });
