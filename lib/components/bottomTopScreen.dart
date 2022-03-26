@@ -78,24 +78,24 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
       primaryState='initialization';
       await dbhelper.updateUserPrimary(primaryState);
     }
-    if (value <= 6){
+    else if (value <= 6){
       //judge the primary state
       primaryState='encounter';
       await dbhelper.updateUserPrimary(primaryState);
     }
-    if(value > 6 && value <= 14){
+    else if(value > 6 && value <= 14){
       primaryState='mate';
       await dbhelper.updateUserPrimary(primaryState);
     }
-    if(value > 14 && value <= 30){
+    else if(value > 14 && value <= 30){
       primaryState='nest';
       await dbhelper.updateUserPrimary(primaryState);
     }
-    if(value > 30 && value <= 46){
+    else if(value > 30 && value <= 46){
       primaryState='hatch';
       await dbhelper.updateUserPrimary(primaryState);
     }
-    if(value > 46 && value <= 78){
+    else if(value > 46 && value <= 78){
       primaryState='learn';
       await dbhelper.updateUserPrimary(primaryState);
     }
@@ -139,6 +139,16 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
 
   }
 
+   Future<List<dynamic>> getAllItems(String dbname) async {
+    //await insertItem();
+
+    //get all foods name as a list of string
+    List<dynamic> items = await dbhelper.queryAll(dbname);
+    //print('##################################first######################################');
+    //print(items);
+
+    return items;
+  }
 
   Future<List<String>> getItemName() async {
     //await insertItem();
@@ -221,7 +231,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
 
   Future<void> deleteItem(String value) async{
       //items = await getItemName();
-      dbhelper.deleteFood(value);
+      await dbhelper.deleteFood(value);
 
   }
 
@@ -251,8 +261,19 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
       var foodName = await dbhelper.getAllUncosumedFoodStringValues('name');
       if(expiretime[i] < timeNow){
         dbhelper.updateFoodWaste(foodName[i]);
+        print('###########################${foodName[i]} is wasted###########################');
       }
     }
+     for(int i = 0; i <= foods.length ; i++ ){
+      var expiretime = await dbhelper.getAllUncosumedFoodIntValues('expiretime');
+      var foodName = await dbhelper.getAllUncosumedFoodStringValues('name');
+      int remainDays = DateTime.fromMillisecondsSinceEpoch(expiretime[i]).difference(timeNowDate).inDays;
+      if(remainDays < 2){
+        //pop up a toast
+        print('###########################${foodName[i]} is expiring!!!###########################');
+      }
+    }
+
   }
 
   //edit the state to 'consumed' and consumestate to 1, and user positive data adds 1
@@ -368,14 +389,6 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
     );
   }
 
-  void pushAddItemPage() {
-    //String date = dateToday.toString().substring(0, 10);
-    // Color color = Theme.of(context).primaryColor;
-    // Navigator.of(context).push(
-    //     MaterialPageRoute(builder: (context) => InputPage())
-    // );
-
-  }
 
   Widget buildList() {
     //items = await getItemName();
@@ -471,9 +484,9 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
 
           // A pane can dismiss the Slidable.
           dismissible: DismissiblePane(onDismissed: () {
-            setState(() {
-              updateFoodState(text, 'wasted');
-              updateUserValue('negative');
+            setState(() async{
+              await updateFoodState(text, 'wasted');
+              await updateUserValue('negative');
               items.removeAt(index);
             });
           }),
@@ -482,10 +495,12 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
           children: [
             // A SlidableAction can have an icon and/or a label.
             SlidableAction(
-              onPressed: (BuildContext context) {
-                updateFoodState( text, 'wasted');
-                updateUserValue('negative');
-              },
+              onPressed: (BuildContext context) async {
+                await updateFoodState( text, 'wasted');
+                await updateUserValue('negative');
+                // var user1 = await getAllItems('users');
+                // print('#########${user1[0].primarystate}#############');
+;              },
               backgroundColor: Color(0xFFFE4A49),
               foregroundColor: Colors.white,
               icon: Icons.delete,
@@ -498,25 +513,37 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
         endActionPane: ActionPane(
           motion: ScrollMotion(),
           dismissible: DismissiblePane(onDismissed: () {
-            setState(() {
-              updateFoodState(text, 'consumed');
-              updateUserValue('positive');
+            setState(() async{
+              await updateFoodState(text, 'consumed');
+              await updateUserValue('positive');
               items.removeAt(index);
+              var user1 = await getAllItems('users');
+              print('#########${user1[0].primarystate}#############');
+              print(user1[0].positive-user1[0].negative);
+              print("===========================");
+              String check = checkIfPrimaryStateChanged(user1[0].positive-user1[0].negative);
+              if (check!='None'){
+                showAchievementDialog(check);
+              }
             });
           }),
           children: [
             SlidableAction (
               // An action can be bigger than the others.
               flex: 2,
-              onPressed: (BuildContext context) {
-                updateFoodState( text, 'consumed');
-                updateUserValue('positive');
-                List user1 = await dbhelper.queryAll('users');
+              onPressed: (BuildContext context) async{
+                await updateFoodState( text, 'consumed');
+                await updateUserValue('positive');
+                var user1 = await getAllItems('users');
+                print('#########${user1[0].primarystate}#############');
+                print(user1[0].positive-user1[0].negative);
+                print("===========================");
                 String check = checkIfPrimaryStateChanged(user1[0].positive-user1[0].negative);
+                print(check);
                 if (check!='None'){
-                  showAchievementDialog(check);
+                showAchievementDialog(check);
                 }
-                buildList();
+                //buildList();
               },
               backgroundColor: progressColor,
               foregroundColor: Colors.white,
@@ -576,10 +603,10 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
             //builder: (BuildContext index) => itemDetailPage();
             pushItemDetailScreen(index, text);
           },
-          onLongPress: () {
+          onLongPress: () async {
             //長按卡片刪除
-            deleteItem(text);
-            buildList();
+            await deleteItem(text);
+            print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%${await getAllItems('foods')}%%%%%%%%%%%%%%%%%%%%%%%%');
           },
         ),
       ),
@@ -613,7 +640,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                       ),
                       //name
                       //quantity number and quantity type
-                      Title( color: Color.fromRGBO(178,207, 135, 0.8),
+                      Title( color: Colors.blue,
                         title: text,
                         child: Column(
                           children: <Widget>[
@@ -641,7 +668,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                         height: 5,
                         child: LinearProgressIndicator(
                           backgroundColor: Colors.grey[200],
-                          valueColor: AlwaysStoppedAnimation(Color.fromRGBO(178,207, 135, 0.8)),
+                          valueColor: AlwaysStoppedAnimation(Colors.blue),
                           value: consumeprogress,
                         ),
                       ),
@@ -662,8 +689,8 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
     Color color = Theme.of(context).primaryColor;
     const double padding = 15;
 
-    final Category = ["Vegetable", "Meat", "Fruit", "Milk Product", "Milk", "Sea Food", "Egg", "Others"];
-    List<Widget> categortyList = new List<Widget>.generate(8, (index) => new Text(Category[index]));
+    final category = ["Vegetable", "Meat", "Fruit", "Milk Product", "Milk", "Sea Food", "Egg", "Others"];
+    List<Widget> categortyList = new List<Widget>.generate(8, (index) => new Text(category[index]));
     final quanTypes = ["Gram", "Kilogram", "Piece", "Bag", "Bottle", "Number"];
     List<Widget> quanTypeList = new List<Widget>.generate(6, (index) => new Text(quanTypes[index]));
     final nums = List.generate(20, (index) => index);
@@ -749,7 +776,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                                           itemExtent: 24.0,
                                           onSelectedItemChanged: (value) {
                                             setState(() {
-                                              categoryController.text = Category[value];
+                                              categoryController.text = category[value];
                                             });
                                           },
                                           children: categortyList,
@@ -884,6 +911,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                                                   int timestamp = selectedDate.millisecondsSinceEpoch;
                                                   print("timestamp$timestamp");
                                                   expireTimeStamp = timestamp;
+                                                  food[3] = expireTimeStamp;
                                                   expireTimeController.text = "$year-$month-$day";
                                                   // Navigator.pop(context)
                                                   //記錄下用戶選擇的時間 ------> 存入數據庫
@@ -921,7 +949,6 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-
                               //需要添加只能選擇一個的判斷
                               _buildButtonColumn1(color, 1),
                               _buildButtonColumn1(color, 4),
@@ -940,12 +967,12 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                   ),
                 ),
                 floatingActionButton: FloatingActionButton(
-                  onPressed: () {
+                  onPressed: ()  async{
                           try{
                               food[0] = nameController.text;
                               food[1] = categoryController.text;
                               food[2] = timeNow;
-                              food[3] = expireTimeStamp;
+                              //food[3] = expireTimeStamp;
                               food[4] = quanTypeController.text;
                               food[5] = quanNum;
                               food[6] = 0.0;
@@ -973,8 +1000,12 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                             //user positive value add 1
                             //var user1 = dbhelper.queryAll('users');
                             updateUserValue('positive');
-
-
+                            var user1 = await getAllItems('users');
+                            print('#########${user1[0].primarystate}#############');
+                            String check = checkIfPrimaryStateChanged(user1[0].positive-user1[0].negative);
+                            if (check!='None'){
+                              showAchievementDialog(check);
+                            }
 
                             } on FormatException{
                               print('Format Error!');
@@ -1037,7 +1068,10 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
           //record new expire time ----> value
           var later = timeNowDate.add(Duration(days: value));
           food[3] = later.millisecondsSinceEpoch;
-
+          int year = later.year;
+          int month = later.month;
+          int day = later.day;
+          expireTimeController.text = "$year-$month-$day";
         },
         icon: Icon(Icons.calendar_today, size: 18),
         label: Text("+ ${value} days"),
@@ -1048,45 +1082,6 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                     side: BorderSide(color: Colors.white)))));
   }
 
-  // button list for category(show category list)
-  ElevatedButton _buildButtonColumn2(BuildContext context, Color color, String lable) {
-    return ElevatedButton.icon(
-        onPressed: () => showDialog<String>(
-          context: context,
-          builder: (BuildContext context) => AlertDialog(
-            title: Text('Quantity Number'),
-            content: QuantityNumber(),
-          ),
-        ),
-        icon: Icon(Icons.calendar_today, size: 18),
-        label: Text(lable),
-        style: ButtonStyle(
-            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20.0),
-                    side: BorderSide(color: Colors.white)))));
-  }
-  ElevatedButton _buildButtonColumn3(BuildContext context, Color color) {
-    return ElevatedButton.icon(
-
-        onPressed: () => showDialog<String>(
-              context: context,
-              builder: (BuildContext context) => AlertDialog(
-                title: Text('Category List'),
-                content: BodyWidget(),
-
-              ),
-            ),
-
-        icon: Icon(Icons.calendar_today, size: 18),
-        label: Text('category'),
-        style: ButtonStyle(
-            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20.0),
-                    side: BorderSide(color: Colors.white))))
-    );
-  }
 
   /// opens edit item screen
   void pushEditItemScreen (index) {

@@ -188,7 +188,7 @@ class _HomePageState extends State<HomePage> {
             height: 10,
           ),
           FloatingActionButton(
-            backgroundColor: Colors.lightBlueAccent,
+            backgroundColor: Color.fromRGBO(178,207, 135, 0.8),
             child: Icon(Icons.photo_album),
             onPressed: () => pickImage(false),
             heroTag: null,
@@ -197,7 +197,7 @@ class _HomePageState extends State<HomePage> {
             height: 10,
           ),
           FloatingActionButton(
-            backgroundColor: Colors.lightBlueAccent,
+            backgroundColor: Color.fromRGBO(178,207, 135, 0.8),
             child: Icon(Icons.camera_alt),
             onPressed: () => pickImage(true),
             heroTag: null,
