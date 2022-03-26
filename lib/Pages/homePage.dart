@@ -96,20 +96,16 @@ class _HomePageState extends State<HomePage> {
     print(await dbhelper.queryAll("users"));
   }
 
-  Future<Null> _pickImage() async {
-    final pickedImage =
-    await ImagePicker().pickImage(source: ImageSource.gallery);
-    imageFile = pickedImage != null ? File(pickedImage.path) : null;
-    if (imageFile != null) {
-      setState(() {
-        state = AppState.picked;
-      });
-    }
-  }
 
-  Future<Null> _cropImage() async {
-    File? croppedFile = await ImageCropper().cropImage(
-        sourcePath: imageFile!.path,
+  Future pickImage(bool isCamera) async {
+    var image;
+    if (isCamera == true) {
+      image = await ImagePicker().pickImage(source: ImageSource.camera);
+    } else {
+      image = await ImagePicker().pickImage(source: ImageSource.gallery);
+    }
+    if (image == null) return;
+    File? croppedFile = await ImageCropper().cropImage(sourcePath: image.path,
         aspectRatioPresets: Platform.isAndroid
             ? [
           CropAspectRatioPreset.square,
@@ -137,54 +133,12 @@ class _HomePageState extends State<HomePage> {
         iosUiSettings: IOSUiSettings(
           title: 'Cropper',
         ));
-    if (croppedFile != null) {
-      imageFile = croppedFile;
+    if(croppedFile != null) {
       setState(() {
-        state = AppState.cropped;
+        imageFile = File(croppedFile.path);
+        imageData = base64Encode(imageFile.readAsBytesSync());
       });
     }
-  }
-
-  void _clearImage() {
-    imageFile = null;
-    setState(() {
-      state = AppState.free;
-    });
-  }
-
-  Future pickImage(bool isCamera) async {
-    var image;
-    if (isCamera == true) {
-      image = await ImagePicker().pickImage(source: ImageSource.camera);
-    } else {
-      image = await ImagePicker().pickImage(source: ImageSource.gallery);
-    }
-    //cropper
-    File? croppedFile = await ImageCropper().cropImage(
-        sourcePath: imageFile.path,
-        aspectRatioPresets: [
-          CropAspectRatioPreset.square,
-          CropAspectRatioPreset.ratio3x2,
-          CropAspectRatioPreset.original,
-          CropAspectRatioPreset.ratio4x3,
-          CropAspectRatioPreset.ratio16x9
-        ],
-        androidUiSettings: AndroidUiSettings(
-            toolbarTitle: 'Cropper',
-            toolbarColor: Colors.deepOrange,
-            toolbarWidgetColor: Colors.white,
-            initAspectRatio: CropAspectRatioPreset.original,
-            lockAspectRatio: false),
-        iosUiSettings: IOSUiSettings(
-          minimumAspectRatio: 1.0,
-        )
-    );
-    if (image == null) return;
-    setState(() {
-      imagePath = croppedFile.path;
-      imageFile = File(image.path);
-      imageData = base64Encode(imageFile.readAsBytesSync());
-    });
     doUpload();
   }
 
@@ -254,29 +208,29 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
         floatingActionButton:
             Column(mainAxisAlignment: MainAxisAlignment.end, children: [
-          FloatingActionButton(
-            child: Icon(Icons.add),
-            onPressed: () {},
-            heroTag: null,
-          ),
-          SizedBox(
-            height: 10,
-          ),
-          FloatingActionButton(
-            backgroundColor: Color.fromRGBO(178,207, 135, 0.8),
-            child: Icon(Icons.photo_album),
-            onPressed: () => pickImage(false),
-            heroTag: null,
-          ),
-          SizedBox(
-            height: 10,
-          ),
-          FloatingActionButton(
-            backgroundColor: Color.fromRGBO(178,207, 135, 0.8),
-            child: Icon(Icons.camera_alt),
-            onPressed: () => pickImage(true),
-            heroTag: null,
-          )
+              FloatingActionButton(
+                child: Icon(Icons.add),
+                onPressed: () {},
+                heroTag: null,
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              FloatingActionButton(
+                backgroundColor: Color.fromRGBO(178,207, 135, 0.8),
+                child: Icon(Icons.photo_album),
+                onPressed: () => pickImage(false),
+                heroTag: null,
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              FloatingActionButton(
+                backgroundColor: Color.fromRGBO(178,207, 135, 0.8),
+                child: Icon(Icons.camera_alt),
+                onPressed: () => pickImage(true),
+                heroTag: null,
+              )
         ]),
         body: new Stack(
           children: <Widget>[
