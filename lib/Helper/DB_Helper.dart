@@ -349,10 +349,20 @@ class DBHelper{
     var foodstring = List<String>.generate(maps.length, (i) => maps[i][value]);
 
     return foodstring;
+  }
+
+  Future<List<Map<String, dynamic>>> getAllWastedFoodList() async {
+    //Get a reference to the database.
+    Database dbHelper = await db;
+    //Query table for all the foods.
+
+    final List<Map<String, dynamic>> maps = await dbHelper.query('foods' , where: 'consumestate > 1');
+
+    return maps;
 
   }
 
-  //Define method that retrieves all the foods from food table
+         //Define method that retrieves all the foods from food table
   Future<List<int>> getAllUncosumedFoodIntValues(String value) async {
     //Get a reference to the database.
     Database dbHelper = await db; 

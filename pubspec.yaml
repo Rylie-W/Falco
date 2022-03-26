@@ -53,6 +53,8 @@ dependencies:
   intl: ^0.16.1
   fluttertoast: ^8.0.9
   flutter_animated_dialog: ^2.0.1
+  syncfusion_flutter_charts: ^18.4.49
+  animated_text_kit: ^4.2.1
 
 
 
@@ -84,6 +86,8 @@ flutter:
     - assets/anime/hardshake.riv
     - assets/anime/shake.riv
     - assets/anime/fly.riv
+    - assets/anime/wasted.riv
+    - assets/anime/noWasted.riv
     - assets/images/backyard.png
     - assets/images/tree.png
     - assets/achievements/initialization.png

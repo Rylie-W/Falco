@@ -100,7 +100,7 @@ class Achievements extends StatelessWidget{
         return Scaffold(
           backgroundColor: Colors.white,
           appBar: AppBar(
-            title: const Text('My Achievements'),
+            title: const Text('My Achievements', style: TextStyle(color: Colors.white),),
           ),
           body: SingleChildScrollView(
             child:

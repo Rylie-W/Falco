@@ -1,10 +1,11 @@
 import 'dart:ffi';
 
+import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:less_waste/components/quantityDialog.dart';
+import 'package:rive/rive.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../Pages/AchievementPage.dart';
 import '../Pages/InputPage.dart';
@@ -51,7 +52,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
     "Meat": "assets/category/meat.png",
     "Milk": "assets/category/milk.png",
     "Milk Product": "assets/category/cheese.png",
-    "Fruits": "assets/category/fruits.png",
+    "Fruit": "assets/category/fruits.png",
     "Egg": "assets/category/egg.png",
     "Vegetable": "assets/category/vegetable.png",
     "Others": "assets/category/others.png"
@@ -343,6 +344,13 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   }
 
   var txt = TextEditingController();
+  late TooltipBehavior _tooltipBehavior;
+
+  @override
+  void initState(){
+    _tooltipBehavior = TooltipBehavior(enable: true);
+    super.initState();
+  }
 
 
   @override
@@ -352,13 +360,25 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
 
     Color color = Theme.of(context).primaryColor;
 
-    return Scaffold(
+    return DefaultTabController(length: 3, child: Scaffold(
       appBar: AppBar(
-        title: Text('Item List'),
+        bottom: const TabBar(
+          labelColor: Colors.white,
+          indicatorColor: Colors.white,
+          tabs: [
+            Tab(icon: Icon(Icons.storefront), text: "Current",),
+            Tab(icon: Icon(Icons.restore_from_trash_sharp), text: "Wasted"),
+            Tab(text: "test"),
+          ],
+        ),
+        title: Text("Item List", style: new TextStyle(color: Colors.white),),
+        toolbarHeight: 20,
       ),
 
-      body: Column(
+      body: TabBarView(
         children: [
+          Column(
+            children: [
               TextField(
                 style: new TextStyle(
                     fontWeight: FontWeight.w400,
@@ -367,29 +387,144 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                     fontSize: 16.0
                 ),
                 decoration: InputDecoration(
-                  enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(5.5)
-                  ),
-                  focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.orange),
-                      borderRadius: BorderRadius.circular(5.5)
-                  ),
-                  prefixIcon: Icon(
-                    Icons.search,
-                  ),
-                  hintStyle: TextStyle(fontWeight: FontWeight.w300),
-                  hintText: "Search"
+                    enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(5.5)
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.orange),
+                        borderRadius: BorderRadius.circular(5.5)
+                    ),
+                    prefixIcon: Icon(
+                      Icons.search,
+                    ),
+                    hintStyle: TextStyle(fontWeight: FontWeight.w300),
+                    hintText: "Search"
                 ),
               ),
 
 
-        Expanded(child: buildList()),
+              Expanded(child: buildList()),
+            ],
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Flexible(
+                  flex: 2,
+                  child: GestureDetector(
+                    child: RiveAnimation.asset(
+                    'assets/anime/noWasted.riv',
+                    ),
+                  ),
+                ),
+                Flexible(
+                  flex: 1,
+                  child: AnimatedTextKit(
+                    animatedTexts: [
+                      TypewriterAnimatedText(
+                        'No wasted now, keep it!',
+                        textStyle: const TextStyle(
+                          fontSize: 32.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        speed: const Duration(milliseconds: 100),
+                      ),
+                    ],
+
+                    totalRepeatCount: 4,
+                    pause: const Duration(milliseconds: 100000),
+                    displayFullTextOnTap: true,
+                    stopPauseOnTap: true,
+                  ),
+                ),
+                Flexible(
+                  flex: 1,
+                  child: Container(),
+                ),
+            ],
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Flexible(
+                flex: 1,
+                child: GestureDetector(
+                  child: RiveAnimation.asset(
+                    'assets/anime/wasted.riv',
+                  ),
+                ),
+              ),
+              Flexible(
+                flex: 1,
+                child: AnimatedTextKit(
+                  animatedTexts: [
+                    TypewriterAnimatedText(
+                      'Oh No! You have wasted "Meat" for 3 times.',
+                      textStyle: const TextStyle(
+                        fontSize: 32.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      speed: const Duration(milliseconds: 100),
+                    ),
+                  ],
+
+                  totalRepeatCount: 4,
+                  pause: const Duration(milliseconds: 100000),
+                  displayFullTextOnTap: true,
+                  stopPauseOnTap: true,
+                ),
+              ),
+              Flexible(
+                flex: 1,
+                child: Column(
+                  children: [
+                    ListTile(
+                      contentPadding:
+                      EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                      leading: Container(
+                        padding: EdgeInsets.only(right: 12.0),
+                        child: Image(
+                          image: AssetImage("assets/category/meat.png"),
+                          width: 32,
+                          height: 32,
+                        ),
+                      ),
+                      title: Text("Meat", style: TextStyle( fontSize: 25), ),
+                      // subtitle: Text("Expired in $expire days", style: TextStyle(fontStyle: FontStyle.italic),),
+                      trailing: Text("3 Times", style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontSize: 24,
+                      )),
+                    ),
+                    ListTile(
+                      contentPadding:
+                      EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                      leading: Container(
+                        padding: EdgeInsets.only(right: 12.0),
+                        child: Image(
+                          image: AssetImage("assets/category/cheese.png"),
+                          width: 32,
+                          height: 32,
+                        ),
+                      ),
+                      title: Text("Butter", style: TextStyle( fontSize: 25), ),
+                      // subtitle: Text("Expired in $expire days", style: TextStyle(fontStyle: FontStyle.italic),),
+                      trailing: Text("1 Times", style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontSize: 24,
+                      )),
+                    )
+                  ],
+                ),
+              ),
+            ],
+          )
         ],
       ),
 
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
+        child: Icon(Icons.add, color: Colors.white,),
         tooltip: "Add item",
         onPressed: () {
           // clear out txt buffer before entering new screen
@@ -398,6 +533,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
           pushAddItemScreen();
         },
       ),
+    )
     );
   }
 
@@ -545,6 +681,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
               // An action can be bigger than the others.
               flex: 2,
               onPressed: (BuildContext context) async{
+
                 await updateFoodState( text, 'consumed');
                 await updateUserValue('positive');
                 var user1 = await getAllItems('users');
@@ -556,6 +693,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                 if (check!='None'){
                 showAchievementDialog(check);
                 }
+                items.removeAt(index);
                 //buildList();
               },
               backgroundColor: progressColor,
@@ -598,7 +736,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                 flex: 4,
                 child: Padding(
                     padding: EdgeInsets.only(left: 10.0),
-                    child: Text("$expire days left",
+                    child: Text("$expire left",
                         style: TextStyle(color: Colors.orange))),
               )
             ],
@@ -713,13 +851,14 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
     var quanType = "";
     DateTime selectedDate = DateTime.now();
     int expireTimeStamp = 0;
-    Color textFieldColor = Colors.orange;
+    Color textFieldColor = Color.fromRGBO(178,207, 135, 0.8);
     Navigator.of(context).push(
         MaterialPageRoute(
             builder: (context) {
               return Scaffold(
                 appBar: AppBar(
-                  title: Text('Add an item'),
+                  iconTheme: IconThemeData(color: Colors.white),
+                  title: Text('Add an item', style: TextStyle(color: Colors.white),),
                 ),
                 body: Padding(
                   padding: const EdgeInsets.all(15),
@@ -1047,7 +1186,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
 
                       },
                       tooltip: 'Add food',
-                      child: const Icon(Icons.add),
+                      child: const Icon(Icons.add,color: Colors.white),
                     ),
                   );
             }
@@ -1102,8 +1241,8 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
           int day = later.day;
           expireTimeController.text = "$year-$month-$day";
         },
-        icon: Icon(Icons.calendar_today, size: 18),
-        label: Text("+ ${value} days"),
+        icon: Icon(Icons.calendar_today, size: 18,color: Colors.white),
+        label: Text("+ ${value} days", style: TextStyle(color: Colors.white),),
         style: ButtonStyle(
             shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                 RoundedRectangleBorder(

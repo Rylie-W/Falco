@@ -33,6 +33,7 @@ int timeNow = DateTime.now().millisecondsSinceEpoch;
     this.context = context;
     return MaterialApp(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: createMaterialColor(Color.fromRGBO(178, 207, 135, 1)),
       ),
