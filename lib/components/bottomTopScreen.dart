@@ -195,7 +195,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
     return type;
   }
 
-   Future<List<DateTime>> getItemExpireingTime() async{
+   Future<List<DateTime>> getItemExpiringTime() async{
     List<int> expire = await dbhelper.getAllUncosumedFoodIntValues('expiretime') ;
     var expireDate = List<DateTime>.generate(expire.length, (i) => DateTime.fromMillisecondsSinceEpoch(expire[i]));
     return expireDate;
@@ -539,64 +539,80 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   Widget buildList() {
     //items = await getItemName();
     return FutureBuilder(
-      future: Future.wait([
-        getItemName(),
-        getItemExpireingTime(),
-        getItemQuanNum(),
-        getItemQuanType(),
-        getItemCategory(),
-        getItemBoughtTime(),
-      ]),
-      builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
-        if (!snapshot.hasData) return const Text('Loading...'); // still loading
-        // alternatively use snapshot.connectionState != ConnectionState.done
-        if(snapshot.hasError) return const Text('Something went wrong.');
-        final List<String> items = snapshot.requireData[0];
-        final List<DateTime> expires = snapshot.requireData[1];
-        if (items.length < 1) {
-          return Center(
-            child: Text("Nothing yet...",
+        future: Future.wait([
+          getItemName(),
+          getItemExpiringTime(),
+          getItemQuanNum(),
+          getItemQuanType(),
+          getItemCategory(),
+          getItemBoughtTime(),
+        ]),
+        builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
+          if (!snapshot.hasData)
+            return const Text('Loading...'); // still loading
+          // alternatively use snapshot.connectionState != ConnectionState.done
+          if (snapshot.hasError) return const Text('Something went wrong.');
+          List<String> items = snapshot.requireData[0];
+          if (items.length < 1) {
+            return Center(
+              child: Text("Nothing yet...",
                 style: TextStyle(
                   fontSize: 20,
                 ),
-            ),
+              ),
+            );
+          }
+          //sort by remaining expiring time
+          snapshot.requireData.add(
+              getRemainingExpiringTime(snapshot.requireData[1]));
+          List<dynamic> foodItems = getFoodItems(snapshot.requireData);
+
+
+          // snapshot.requireData.add(value);
+          items = List<String>.from(foodItems[0]);
+          final List<DateTime> expires = List<DateTime>.from(foodItems[1]);
+          final List<int> num = List<int>.from(foodItems[2]);
+          final List<String> type = List<String>.from(foodItems[3]);
+          final List<String> categoryies = List<String>.from(foodItems[4]);
+          final List<DateTime> boughtTime = List<DateTime>.from(foodItems[5]);
+          final List<Duration> remainingTime = List<Duration>.from(
+              foodItems[6]);
+          return ListTileTheme(
+              contentPadding: EdgeInsets.all(15),
+              textColor: Colors.black54,
+              style: ListTileStyle.list,
+              dense: true,
+              child: ListView.builder(
+                  itemCount: items.length,
+                  itemBuilder: (context, index) {
+                    var item = items[index];
+                    //how to show the quantity tyoe and quantity number?
+
+                    //var expires = getItemExpiringTime();
+                    //how to show the listsby sequence of expire time?
+                    var remainDays = remainingTime[index].inDays;
+                    var progressPercentage = remainDays / (expires[index]
+                        .difference(boughtTime[index])
+                        .inDays);
+                    var foodNum = num[index];
+                    var foodType = type[index];
+
+                    var category = categoryies[index];
+
+                    return buildItem(
+                        item,
+                        remainDays,
+                        foodNum,
+                        foodType,
+                        index,
+                        category,
+                        progressPercentage);
+                  }
+              )
           );
         }
-        final List<int> num = snapshot.requireData[2];
-        final List<String> type = snapshot.requireData[3];
-        final List<String> categoryies = snapshot.requireData[4];
-        final List<DateTime> boughtTime = snapshot.requireData[5];
-        return ListTileTheme(
-          contentPadding: EdgeInsets.all(15),
-          textColor: Colors.black54,
-          style: ListTileStyle.list,
-          dense: true,
-          child: ListView.builder(
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-            var item = items[index];
-            //how to show the quantity tyoe and quantity number?
-
-            //var expires = getItemExpireingTime();
-            var expire = expires[index];
-                        //how to show the listsby sequence of expire time?
-            final sortedItems = expires.reversed.toList();
-            expire = sortedItems[index];
-            var remainDays = expires[index].difference(timeNowDate).inDays;
-            var progressPercentage = remainDays/(expires[index].difference(boughtTime[index]).inDays);
-            var foodNum = num[index];
-            var foodType = type[index];
-
-            var category = categoryies[index];
-
-            return buildItem(item, remainDays, foodNum, foodType, index, category, progressPercentage);
-            }
-          )
-        );
-      }
     );
   }
-  
 
   Widget buildItem(String text, int expire, int foodNum, String foodType, int index, String category, double progressPercentage ) {
     var categoryIconImagePath = null;
@@ -621,6 +637,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
         borderRadius: BorderRadius.circular(10),
       ),
       margin: EdgeInsets.all(10),
+      color: expire>3?Colors.white:Color.fromRGBO(238, 162, 164, 0.8),
       child:
       Slidable(
         key: const ValueKey(0),
@@ -718,7 +735,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                 child: Padding(
                     padding: EdgeInsets.only(left: 10.0),
                     child: Text("$expire left",
-                        style: TextStyle(color: Colors.orange))),
+                        style: TextStyle(color: expire>3?Colors.orange:Colors.black))),
               )
             ],
           ),
@@ -1149,12 +1166,6 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                             //user positive value add 1
                             //var user1 = dbhelper.queryAll('users');
                             updateUserValue('positive');
-                            var user1 = await getAllItems('users');
-                            print('#########${user1[0].primarystate}#############');
-                            String check = checkIfPrimaryStateChanged(user1[0].positive-user1[0].negative);
-                            if (check!='None'){
-                              showAchievementDialog(check);
-                            }
 
                             } on FormatException{
                               print('Format Error!');
@@ -1173,41 +1184,6 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
             }
         )
     );
-  }
-
-  showAchievementDialog(String state){
-    double width= MediaQuery.of(context).size.width;
-    double height= MediaQuery.of(context).size.height;
-    int stateIndex= Achievements.stateMap[state]??-1;
-    AlertDialog dialog = AlertDialog(
-      title: const Text("Congratulations!"),
-      content:
-      new Container(
-        width: 3*width/5,
-        height: height/3,
-        padding: const EdgeInsets.all(10.0),
-        child:
-        new Column(
-          children: [
-            Expanded(child: stateIndex>-1? Image.asset(Achievements.imageList[stateIndex]):Image.asset(Achievements.imageList[12])),
-            Text(
-                stateIndex>-1?"You have made the achievement "+Achievements.achievementNameList[stateIndex]:"Something goes wrong. We are fixing it.",
-                textAlign: TextAlign.center,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontWeight: FontWeight.bold))
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, 'OK'),
-          child: const Text('OK'),
-        ),
-      ],
-    );
-    showDialog(context: context, builder: (BuildContext context){
-      return dialog;
-    });
   }
 
   // button list for expiring date (only button)
@@ -1284,5 +1260,39 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
         controller: quanTypeController,
       )
     );
+  }
+
+  List<dynamic> getFoodItems(List<dynamic> snapshot){
+    List<dynamic> converted = convertSnapshot(snapshot);
+    converted.sort((a,b){return a[a.length-1].compareTo(b[a.length-1]);});
+    List<dynamic> res = [];
+    for (var i=0;i<converted[0].length;i++){
+      List<dynamic> item=[];
+      for (var j=0;j<converted.length;j++){
+        item.add(converted[j][i]);
+      }
+      res.add(item);
+    }
+    return res;
+  }
+
+  List<dynamic> convertSnapshot(List<dynamic> snapshot){
+    List<dynamic> res=[];
+    for (var i=0;i<snapshot[0].length;i++){
+      List<dynamic> item=[];
+      for (var j=0;j<snapshot.length;j++){
+        item.add(snapshot[j][i]);
+      }
+      res.add(item);
+    }
+    return res;
+  }
+
+  List<Duration> getRemainingExpiringTime(List<DateTime> expiringTime){
+    List<Duration> remainingTime=[];
+    for(var i=0;i<expiringTime.length;i++){
+      remainingTime.add(expiringTime[i].difference(timeNowDate));
+    }
+    return remainingTime;
   }
 }
