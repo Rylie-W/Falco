@@ -11,6 +11,7 @@ class HomePage extends StatefulWidget {
   const HomePage({Key? key, this.animationController}) : super(key: key);
 
   final AnimationController? animationController;
+
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -24,66 +25,75 @@ class _HomePageState extends State<HomePage> {
   DateTime timeNowDate = new DateTime.now();
   int timeNow = DateTime.now().millisecondsSinceEpoch;
 
-
   //Create Databse Object
   DBHelper dbhelper = DBHelper();
+
   //check the primary state of uservalue should be updated or not; if so, update to the latest
-  Future<void> updatePrimaryState() async{
+  Future<void> updatePrimaryState() async {
     var user1 = await dbhelper.queryAll('users');
     int value = user1[0].positive - user1[0].negative;
     String primaryState;
 
-    if (value < 2){
-      primaryState='initialization';
+    if (value < 2) {
+      primaryState = 'initialization';
       await dbhelper.updateUserPrimary(primaryState);
     }
-    if (value <= 6){
+    if (value <= 6) {
       //judge the primary state
-      primaryState='encounter';
+      primaryState = 'encounter';
       await dbhelper.updateUserPrimary(primaryState);
     }
-    if(value > 6 && value <= 14){
-      primaryState='mate';
+    if (value > 6 && value <= 14) {
+      primaryState = 'mate';
       await dbhelper.updateUserPrimary(primaryState);
     }
-    if(value > 14 && value <= 30){
-      primaryState='nest';
+    if (value > 14 && value <= 30) {
+      primaryState = 'nest';
       await dbhelper.updateUserPrimary(primaryState);
     }
-    if(value > 30 && value <= 46){
-      primaryState='hatch';
+    if (value > 30 && value <= 46) {
+      primaryState = 'hatch';
       await dbhelper.updateUserPrimary(primaryState);
     }
-    if(value > 46 && value <= 78){
-      primaryState='learn';
+    if (value > 46 && value <= 78) {
+      primaryState = 'learn';
       await dbhelper.updateUserPrimary(primaryState);
-    }
-    else if(value > 78 && value <= 82){
-      primaryState='leavehome';
+    } else if (value > 78 && value <= 82) {
+      primaryState = 'leavehome';
       await dbhelper.updateUserPrimary(primaryState);
-    }
-    else if(value > 82 && value <= 91){
-      primaryState='snow owl';
+    } else if (value > 82 && value <= 91) {
+      primaryState = 'snow owl';
       await dbhelper.updateUserPrimary(primaryState);
-    }
-    else if(value > 91 && value <= 100){
-      primaryState='tawny owl';
+    } else if (value > 91 && value <= 100) {
+      primaryState = 'tawny owl';
     }
   }
-   //edit the state to 'consumed' and consumestate to 1, and user positive data adds 1
+
+  //edit the state to 'consumed' and consumestate to 1, and user positive data adds 1
   //the arugument should be 'positive'(which means positive + 1) or 'negative'(which means negative + 1)
-  Future<void> updateUserValue() async{
+  Future<void> updateUserValue() async {
     var user1 = await dbhelper.queryAll('users');
     //int value = user1[0]['positive'] - user1[0]['negative'];
     print('================= user =================');
     print(user1);
-  
-      //judge the primary state
-      var uservalue = UserValue(name: user1[0].name, negative: user1[0].negative, positive: user1[0].positive + 2, primarystate: user1[0].primarystate, secondarystate: 'satisfied', secondaryevent: "single", thirdstate: "move", species: "folca", childrennum: 0, fatherstate: "single", motherstate: "single", time: timeNow);    
-      await dbhelper.updateUser(uservalue);
-      await updatePrimaryState();
-      print(await dbhelper.queryAll("users"));
 
+    //judge the primary state
+    var uservalue = UserValue(
+        name: user1[0].name,
+        negative: user1[0].negative,
+        positive: user1[0].positive + 2,
+        primarystate: user1[0].primarystate,
+        secondarystate: 'satisfied',
+        secondaryevent: "single",
+        thirdstate: "move",
+        species: "folca",
+        childrennum: 0,
+        fatherstate: "single",
+        motherstate: "single",
+        time: timeNow);
+    await dbhelper.updateUser(uservalue);
+    await updatePrimaryState();
+    print(await dbhelper.queryAll("users"));
   }
 
   Future<Null> _pickImage() async {
@@ -144,7 +154,7 @@ class _HomePageState extends State<HomePage> {
 
   Future pickImage(bool isCamera) async {
     var image;
-    if(isCamera == true) {
+    if (isCamera == true) {
       image = await ImagePicker().pickImage(source: ImageSource.camera);
     } else {
       image = await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -184,13 +194,14 @@ class _HomePageState extends State<HomePage> {
   doUpload() async {
     Map<String, dynamic> jsonMap = {
       "image": imageData,
-      "headers": { "Content-Type": "application/json"}
+      "headers": {"Content-Type": "application/json"}
     };
     String jsonString = json.encode(jsonMap);
-    http.Response response = await http.post(Uri.parse(url_to_api), body:jsonString);
+    http.Response response =
+        await http.post(Uri.parse(url_to_api), body: jsonString);
     var parsed = jsonDecode(response.body);
     //fromJson(parsed);
-    parsed.forEach((key, value) async{
+    parsed.forEach((key, value) async {
       //record the key and value
       await insertDB(key, value);
       print('#####$key######$value############');
@@ -199,85 +210,94 @@ class _HomePageState extends State<HomePage> {
     print(response.body);
   }
 
-
   //NNNNNOOOOOOO NEED!!!!!
-  Future<int> getMaxId() async{
-
-   int maxId = await dbhelper.getMaxId();
-   return maxId;
+  Future<int> getMaxId() async {
+    int maxId = await dbhelper.getMaxId();
+    return maxId;
   }
-  
 
-  Future<void> insertDB(String name, int number) async{
-
-   // var maxId = await dbhelper.getMaxId();
+  Future<void> insertDB(String name, int number) async {
+    // var maxId = await dbhelper.getMaxId();
     //print('##########################MaxID = $maxId###############################');
     //maxId = maxId + 1;
     //timeNow -> DateTime, + 7 days, --> int timestamp
     var expireDate = timeNowDate.add(Duration(days: 7)).millisecondsSinceEpoch;
     print('#########################$expireDate##################');
-    var newFood = Food(name:name, category: 'Meat', boughttime: timeNow, expiretime: expireDate, quantitytype: 'bag', quantitynum: number, consumestate: 0.0, state: 'good');
+    var newFood = Food(
+        name: name,
+        category: 'Meat',
+        boughttime: timeNow,
+        expiretime: expireDate,
+        quantitytype: 'bag',
+        quantitynum: number,
+        consumestate: 0.0,
+        state: 'good');
 
     print(newFood);
 
     await dbhelper.insertFood(newFood);
     print(await dbhelper.queryAll('foods'));
-
   }
+
+  SMITrigger? _tap;
+
+  void _onRiveInit(Artboard artboard) {
+    final controller = StateMachineController.fromArtboard(artboard, 'Tap');
+    artboard.addController(controller!);
+    _tap = controller.findInput<SMITrigger>('Tap') as SMITrigger;
+  }
+
+  void _hittap() => _tap?.fire();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton:
-      Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            FloatingActionButton(
-              child: Icon(
-                  Icons.add
-              ),
-              onPressed: () {
-              },
-              heroTag: null,
-            ),
-            SizedBox(
-              height: 10,
-            ),
-            FloatingActionButton(
-              backgroundColor: Colors.lightBlueAccent,
-              child: Icon(
-                  Icons.photo_album
-              ),
-              onPressed: () => pickImage(false),
-              heroTag: null,
-            ),
-            SizedBox(
-              height: 10,
-            ),
-            FloatingActionButton(
-              backgroundColor: Colors.lightBlueAccent,
-              child: Icon(
-                  Icons.camera_alt
-              ),
-              onPressed: () => pickImage(true),
-              heroTag: null,
-            )
-          ]
-      ),
-      body: new Stack(
-        children: <Widget>[
-          new Container(
-            decoration: new BoxDecoration(
-              image: new DecorationImage(
-                image: new AssetImage("assets/images/backyard.png"),
-                fit: BoxFit.cover,
-              ),
-            ),
+        floatingActionButton:
+            Column(mainAxisAlignment: MainAxisAlignment.end, children: [
+          FloatingActionButton(
+            child: Icon(Icons.add),
+            onPressed: () {},
+            heroTag: null,
           ),
-        ],
-      )
-    );
-
+          SizedBox(
+            height: 10,
+          ),
+          FloatingActionButton(
+            backgroundColor: Color.fromRGBO(178,207, 135, 0.8),
+            child: Icon(Icons.photo_album),
+            onPressed: () => pickImage(false),
+            heroTag: null,
+          ),
+          SizedBox(
+            height: 10,
+          ),
+          FloatingActionButton(
+            backgroundColor: Color.fromRGBO(178,207, 135, 0.8),
+            child: Icon(Icons.camera_alt),
+            onPressed: () => pickImage(true),
+            heroTag: null,
+          )
+        ]),
+        body: new Stack(
+          children: <Widget>[
+            new Container(
+              decoration: new BoxDecoration(
+                image: new DecorationImage(
+                  image: new AssetImage("assets/images/tree.png"),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            new Center(
+              child: GestureDetector(
+                child: RiveAnimation.asset(
+                  'assets/anime/fly.riv',
+                  onInit: _onRiveInit,
+                ),
+                onTap: _hittap,
+              ),
+            ),
+          ],
+        ));
   }
-  
 }

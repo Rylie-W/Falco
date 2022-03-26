@@ -49,7 +49,7 @@ class _FrameState extends State<Frame> {
         negative: 0,
         positive: 0,
         primarystate: "initialization",
-        secondarystate: "satisfied",
+        secondarystate: "false",
         secondaryevent: "single",
         thirdstate: "move",
         species: "folca",

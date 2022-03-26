@@ -32,11 +32,11 @@ class BodyWidget extends StatelessWidget {
             leading: CircleAvatar(
               backgroundImage: AssetImage("assets/category/meat.png"),
             ),
-            title: Text('MilkProduct'),
+            title: Text('Milk Product'),
             subtitle: Text('Provider of milk'),
             onTap: () {
               print('MilkProduct');
-              category = 'MilkProduct';
+              category = 'Milk Product';
               //Navigator.pop(context, category);
             },
           ),
