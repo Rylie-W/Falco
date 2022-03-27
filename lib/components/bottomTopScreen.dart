@@ -729,8 +729,8 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                   child: Container(
                     child: LinearProgressIndicator(
                         backgroundColor: Color.fromRGBO(209, 224, 224, 0.2),
-                        value: 0.44,
-                        valueColor: AlwaysStoppedAnimation(Colors.green)),
+                        value: progressPercentage,
+                        valueColor: AlwaysStoppedAnimation(expire>3?Colors.green:Colors.red)),
                   )
               ),
               Expanded(
