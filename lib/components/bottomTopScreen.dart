@@ -48,7 +48,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   //FocusScopeNode? focusScopeNode;
 
   Map<String, String> GlobalCateIconMap = {
-    "Sea Food": "assets/category/seafood.png",
+    "seafood": "assets/category/seafood.png",
     "Meat": "assets/category/meat.png",
     "Milk": "assets/category/milk.png",
     "Milk Product": "assets/category/cheese.png",
@@ -122,7 +122,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   
   Future<void> insertItem() async{
        //Insert a new Food butter
-      var butter = Food(name: 'butter', category: 'Milk Product', boughttime: 154893, expiretime: 156432, quantitytype: 'Piece', quantitynum: 3, consumestate: 0.50, state: 'good');
+      var butter = Food(name: 'butter', category: 'cheese', boughttime: 154893, expiretime: 156432, quantitytype: 'Piece', quantitynum: 3, consumestate: 0.50, state: 'good');
       await dbhelper.insertFood(butter);
       var egg = Food(name: 'eggs', category: 'Egg', boughttime: 134554, expiretime: 1654757, quantitytype: 'Number', quantitynum: 4, consumestate: 0, state: 'good');
       await dbhelper.insertFood(egg);
@@ -249,12 +249,13 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
      print(updatedFood);
      if(attribute == 'consumed'){
      //var consumedFoodUpdate = Food(id: id, name: name, category: updatedFood[0].category, boughttime: updatedFood[0].boughttime, expiretime: updatedFood[0].expiretime, quantitytype: updatedFood[0].quantitytype, quantitynum: 0, consumestate: 1.0, state: 'consumed');
-      dbhelper.updateFoodConsumed(name, 'consumed');
+      await dbhelper.updateFoodConsumed(name, 'consumed');
+      print(await dbhelper.queryAll('foods'));
      }
      else{
       //var wastedFoodUpdate = Food(id: id, name: name, category: updatedFood[0].category, boughttime: updatedFood[0].boughttime, expiretime: updatedFood[0].expiretime, quantitytype: updatedFood[0].quantitytype, quantitynum: updatedFood[0].quantitynum, consumestate: 1.0, state: 'wasted');
-      dbhelper.updateFoodWaste(name);
-
+      await dbhelper.updateFoodWaste(name);
+      print(await dbhelper.queryAll('foods'));
      }
   }
   
@@ -279,7 +280,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
       int remainDays = DateTime.fromMillisecondsSinceEpoch(expiretime[i]).difference(timeNowDate).inDays;
       if(remainDays < 2){
         //pop up a toast
-        dbhelper.updateFoodConsumed(foodName[i], 'expiring');
+        await dbhelper.updateFoodConsumed(foodName[i], 'expiring');
         print('###########################${foodName[i]} is expiring!!!###########################');
       }
     }
@@ -664,7 +665,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                 await updateFoodState( text, 'wasted');
                 await updateUserValue('negative');
                 items.removeAt(index);
-                // var user1 = await getAllItems('users');
+                //print(await getAllItems('foods'));
                 // print('#########${user1[0].primarystate}#############');
 ;              },
               backgroundColor: Color(0xFFFE4A49),
@@ -690,9 +691,9 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
               // An action can be bigger than the others.
               flex: 2,
               onPressed: (BuildContext context) async{
-
                 await updateFoodState( text, 'consumed');
                 await updateUserValue('positive');
+                //print(await getAllItems('foods'));
                 items.removeAt(index);
                 //buildList();
               },
@@ -757,6 +758,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
           onLongPress: () async {
             //長按卡片刪除
             await deleteItem(text);
+            items.removeAt(index);
             print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%${await getAllItems('foods')}%%%%%%%%%%%%%%%%%%%%%%%%');
           },
         ),

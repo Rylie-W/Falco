@@ -19,12 +19,30 @@ class _FrameState extends State<Frame> {
   int timeNow = DateTime.now().millisecondsSinceEpoch;
   // navigationbar related
   AnimationController? animationController;
+  
+
+  String imagePath(String category) {
+    String imagePath = "assets/category/" + category + ".png";
+    return imagePath;
+  }
+
+  Map<String, String> GlobalCateIconMap = {
+    "seafood": "assets/category/seafood.png",
+    "Meat": "assets/category/meat.png",
+    "Milk": "assets/category/milk.png",
+    "Milk Product": "assets/category/cheese.png",
+    "Fruit": "assets/category/fruits.png",
+    "Egg": "assets/category/egg.png",
+    "Vegetable": "assets/category/vegetable.png",
+    "Others": "assets/category/others.png"
+  };
 
    //when to call this function? At a certain time evey day.
   Future<void> autocheckWaste() async{
     //get every instance out of Foods table and compare its expiretime with current time
     //int maxID = await dbhelper.getMaxId();
     var foods = await dbhelper.queryAllGoodFood('good');
+    //var foods = await dbhelper.queryAllUnconsumedFood();
     print('######################$foods#################');
 
     for(int i = 0; i < foods.length ; i++ ){
@@ -32,8 +50,9 @@ class _FrameState extends State<Frame> {
       var expiretime = foods[i].expiretime;
       var foodName = foods[i].name;
       if(expiretime < timeNow){
-        dbhelper.updateFoodWaste(foodName[i]);
-        showExpiredDialog(foodName);
+        await dbhelper.updateFoodWaste(foodName[i]);
+        String category = await dbhelper.getOneFoodValue(foodName, 'category');
+        showExpiredDialog(foodName, category);
         print('###########################${foodName[i]} is wasted###########################');
       }
     }
@@ -41,29 +60,38 @@ class _FrameState extends State<Frame> {
       var expiretime = foods[i].expiretime;
       var foodName = foods[i].name;
       int remainDays = DateTime.fromMillisecondsSinceEpoch(expiretime).difference(timeNowDate).inDays;
-      if(remainDays < 2){
+      if(remainDays < 2 && remainDays >= 0){
         //pop up a toast
-        dbhelper.updateFoodConsumed(foodName[i], 'expiring');
-        showExpiringDialog(foodName[i]);
+        await dbhelper.updateFoodConsumed(foodName[i], 'expiring');
+        String category = await dbhelper.getOneFoodValue(foodName, 'category');
+        showExpiringDialog(foodName, category);
         print('###########################$foodName is expiring!!!###########################');
       }
     }
   }
 
   //toast contains 'Alert! Your ***  will expire in two days'
-  showExpiredDialog(String foodname){
-    //double width= MediaQuery.of(context).size.width;
-    //double height= MediaQuery.of(context).size.height;
+  showExpiredDialog(String foodname, String category){
+    var categoryIconImagePath = null;
+    var progressColor = null;
+    if(GlobalCateIconMap[category] == null) {
+      categoryIconImagePath = GlobalCateIconMap["Others"];
+    } else {
+      categoryIconImagePath = GlobalCateIconMap[category];
+    };
+    double width= MediaQuery.of(context).size.width;
+    double height= MediaQuery.of(context).size.height;
     AlertDialog dialog = AlertDialog(
       title: const Text("Alert!",textAlign: TextAlign.center),
       content:
       Container(
-        width: 30,
-        height: 30,
+        width: 3*width/5,
+        height: height/3,
         padding: const EdgeInsets.all(10.0),
         child:
           Column(
             children: [
+              Image.asset(categoryIconImagePath),
               //Expanded(child: stateIndex>-1? Image.asset(imageList[stateIndex]):Image.asset(imageList[12])),
               Text(
                   'Your $foodname is already expired!',
@@ -85,19 +113,27 @@ class _FrameState extends State<Frame> {
   }
 
   //toast contains 'Alert! Your ***  will expire in two days'
-  showExpiringDialog(String foodname){
-    //double width= MediaQuery.of(context).size.width;
-    //double height= MediaQuery.of(context).size.height;
+  showExpiringDialog(String foodname, String category){
+    var categoryIconImagePath = null;
+    var progressColor = null;
+    if(GlobalCateIconMap[category] == null) {
+      categoryIconImagePath = GlobalCateIconMap["Others"];
+    } else {
+      categoryIconImagePath = GlobalCateIconMap[category];
+    };
+    double width= MediaQuery.of(context).size.width;
+    double height= MediaQuery.of(context).size.height;
     AlertDialog dialog = AlertDialog(
       title: const Text("Alert!",textAlign: TextAlign.center),
       content:
       Container(
-        width: 30,
-        height: 30,
+        width: 3*width/5,
+        height: height/3,
         padding: const EdgeInsets.all(10.0),
         child:
           Column(
             children: [
+              Image.asset(categoryIconImagePath),
               //Expanded(child: stateIndex>-1? Image.asset(imageList[stateIndex]):Image.asset(imageList[12])),
               Text(
                   'Your $foodname will expire in two days!',
