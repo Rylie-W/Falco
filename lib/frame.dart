@@ -65,7 +65,7 @@ class _FrameState extends State<Frame> {
       int remainDays = DateTime.fromMillisecondsSinceEpoch(expiretime).difference(timeNowDate).inDays;
       print('#######################$remainDays#######################');
       // ignore: unrelated_type_equality_checks
-      if(remainDays < 2 && foodState == 'good' && remainDays >= 0){
+      if(remainDays < 2 && foodState == 'good' && remainDays > 0){
         //pop up a toast
         await dbhelper.updateFoodExpiring(foodName);
         String category = await dbhelper.getOneFoodValue(foodName, 'category');
