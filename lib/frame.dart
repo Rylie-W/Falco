@@ -49,20 +49,25 @@ class _FrameState extends State<Frame> {
       //var expiretime = await dbhelper.getAllGoodFoodIntValues('expiretime', 'good');
       var expiretime = foods[i].expiretime;
       var foodName = foods[i].name;
+      var foodState = foods[i].state;
       if(expiretime < timeNow){
-        await dbhelper.updateFoodWaste(foodName[i]);
+        if(foodState == 'good' || foodState == 'expiring')
+        await dbhelper.updateFoodWaste(foodName);
         String category = await dbhelper.getOneFoodValue(foodName, 'category');
         showExpiredDialog(foodName, category);
-        print('###########################${foodName[i]} is wasted###########################');
+        print('###########################$foodName is wasted###########################');
       }
     }
      for(int i = 0; i < foods.length ; i++ ){
       var expiretime = foods[i].expiretime;
       var foodName = foods[i].name;
+      var foodState = foods[i].state;
       int remainDays = DateTime.fromMillisecondsSinceEpoch(expiretime).difference(timeNowDate).inDays;
-      if(remainDays < 2 && remainDays >= 0){
+      print('#######################$remainDays#######################');
+      // ignore: unrelated_type_equality_checks
+      if(remainDays < 2 && foodState == 'good' && remainDays >= 0){
         //pop up a toast
-        await dbhelper.updateFoodConsumed(foodName[i], 'expiring');
+        await dbhelper.updateFoodExpiring(foodName);
         String category = await dbhelper.getOneFoodValue(foodName, 'category');
         showExpiringDialog(foodName, category);
         print('###########################$foodName is expiring!!!###########################');

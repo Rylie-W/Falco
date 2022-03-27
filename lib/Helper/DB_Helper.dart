@@ -481,6 +481,12 @@ class DBHelper{
     await dbHelper.rawUpdate('UPDATE foods SET quantitynum = ?, consumestate = ?, state = ? WHERE name = ?',[0, 1.0, status, name]);
     print('###############update##################');
   }
+   Future<void> updateFoodExpiring(String name) async{
+    Database dbHelper = await db;
+
+    await dbHelper.rawUpdate('UPDATE foods SET state = ? WHERE name = ?',['expiring', name]);
+    print('###############update##################');
+  }
 
     //Define method that updates user data 
   Future<void> updateUserPrimary(String primaryState) async{
