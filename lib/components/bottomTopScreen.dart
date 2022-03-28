@@ -22,7 +22,7 @@ class BottomTopScreen extends StatefulWidget {
   _BottomTopScreenState createState() => _BottomTopScreenState();
 }
 
-class _BottomTopScreenState extends State<BottomTopScreen> {
+class _BottomTopScreenState extends State<BottomTopScreen> with TickerProviderStateMixin{
   TextEditingController nameController = TextEditingController();
   TextEditingController expireTimeController = TextEditingController();
   TextEditingController boughtTimeController = TextEditingController();
@@ -61,6 +61,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
   String foodName = '';
   bool showSuggestList = false;
   List<String> items = [];
+  List<String> itemsWaste = [];
   //List<String> items = ['eggs','milk','butter];
   DateTime timeNowDate = new DateTime.now();
   int timeNow = DateTime.now().millisecondsSinceEpoch;
@@ -258,34 +259,6 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
       print(await dbhelper.queryAll('foods'));
      }
   }
-  
-
-  //when to call this function? At a certain time evey day.
-  Future<void> autocheckWaste() async{
-    //get every instance out of Foods table and compare its expiretime with current time
-    //int maxID = await dbhelper.getMaxId();
-    var foods = await dbhelper.queryAllUnconsumedFood();
-
-    for(int i = 0; i <= foods.length ; i++ ){
-      var expiretime = await dbhelper.getAllUncosumedFoodIntValues('expiretime');
-      var foodName = await dbhelper.getAllUncosumedFoodStringValues('name');
-      if(expiretime[i] < timeNow){
-        dbhelper.updateFoodWaste(foodName[i]);
-        print('###########################${foodName[i]} is wasted###########################');
-      }
-    }
-     for(int i = 0; i <= foods.length ; i++ ){
-      var expiretime = await dbhelper.getAllUncosumedFoodIntValues('expiretime');
-      var foodName = await dbhelper.getAllUncosumedFoodStringValues('name');
-      int remainDays = DateTime.fromMillisecondsSinceEpoch(expiretime[i]).difference(timeNowDate).inDays;
-      if(remainDays < 2){
-        //pop up a toast
-        await dbhelper.updateFoodConsumed(foodName[i], 'expiring');
-        print('###########################${foodName[i]} is expiring!!!###########################');
-      }
-    }
-
-  }
 
   //edit the state to 'consumed' and consumestate to 1, and user positive data adds 1
   //the arugument should be 'positive'(which means positive + 1) or 'negative'(which means negative + 1)
@@ -346,11 +319,20 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
 
   var txt = TextEditingController();
   late TooltipBehavior _tooltipBehavior;
+  //late bool _isLoading;
+  late TabController _tabController;
 
   @override
   void initState(){
     _tooltipBehavior = TooltipBehavior(enable: true);
+    //_controller = TabController(length: 3, vsync: this);
+    //Future.delayed(Duration(seconds: 3)).then((value) {
+      //setState(() {
+        //_isLoading = false;
+      //});
+    //});
     super.initState();
+    _tabController = TabController(length: 3, vsync: this);
   }
 
 
@@ -361,15 +343,16 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
 
     Color color = Theme.of(context).primaryColor;
 
-    return DefaultTabController(length: 3, child: Scaffold(
+    return Scaffold(
       appBar: AppBar(
-        bottom: const TabBar(
+        bottom: TabBar(
           labelColor: Colors.white,
           indicatorColor: Colors.white,
+          controller: _tabController,
           tabs: [
-            Tab(icon: Icon(Icons.storefront), text: "Current",),
+            Tab(icon: Icon(Icons.storefront), text: "Current"),
             Tab(icon: Icon(Icons.restore_from_trash_sharp), text: "Wasted"),
-            Tab(text: "test"),
+            Tab(icon: Icon(Icons.business), text: "Plan"),
           ],
         ),
         title: Text("Item List", style: new TextStyle(color: Colors.white),),
@@ -377,6 +360,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
       ),
 
       body: TabBarView(
+        controller: _tabController,
         children: [
           Column(
             children: [
@@ -403,9 +387,168 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                     hintText: "Search"
                 ),
               ),
+              Expanded(
+                child: FutureBuilder(
+        future: Future.wait([
+          getItemName(),
+          getItemExpiringTime(),
+          getItemQuanNum(),
+          getItemQuanType(),
+          getItemCategory(),
+          getItemBoughtTime(),
+        ]),
+        builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
+
+          if (!snapshot.hasData)
+            return const Text('Loading...'); // still loading
+          // alternatively use snapshot.connectionState != ConnectionState.done
+          if (snapshot.hasError) return const Text('Something went wrong.');
+          List<String> items = snapshot.requireData[0];
+          print('#################$items#########################');
+          if (items.length < 1) {
+          return Center(
+              child: Text("Nothing yet...",
+                style: TextStyle(
+                  fontSize: 20,
+                ),
+              ),
+            );
+          }
+          //sort by remaining expiring time
+          snapshot.requireData.add(
+              getRemainingExpiringTime(snapshot.requireData[1]));
+          List<dynamic> foodItems = getFoodItems(snapshot.requireData);
 
 
-              Expanded(child: buildList()),
+          // snapshot.requireData.add(value);
+          items = List<String>.from(foodItems[0]);
+          print('###################################$items#################################');
+          final List<DateTime> expires = List<DateTime>.from(foodItems[1]);
+          final List<int> num = List<int>.from(foodItems[2]);
+          final List<String> type = List<String>.from(foodItems[3]);
+          final List<String> categoryies = List<String>.from(foodItems[4]);
+          final List<DateTime> boughtTime = List<DateTime>.from(foodItems[5]);
+          final List<Duration> remainingTime = List<Duration>.from(foodItems[6]);
+          return ListTileTheme(
+              contentPadding: EdgeInsets.all(15),
+              textColor: Colors.black54,
+              style: ListTileStyle.list,
+              dense: true,
+              child: ListView.builder(
+                  itemCount: items.length,
+                  itemBuilder: (context, index) {
+                    var item = items[index];
+                    //how to show the quantity tyoe and quantity number?
+
+                    //var expires = getItemExpiringTime();
+                    //how to show the listsby sequence of expire time?
+                    var remainDays = remainingTime[index].inDays;
+                    var progressPercentage = remainDays / (expires[index].difference(boughtTime[index])
+                        .inDays);
+                    var foodNum = num[index];
+                    var foodType = type[index];
+
+                    var category = categoryies[index];
+
+                    return buildItem(
+                        item,
+                        remainDays,
+                        foodNum,
+                        foodType,
+                        index,
+                        category,
+                        progressPercentage
+                    );
+                  }
+            )
+          );
+        }
+      )
+                ),
+            ],
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Flexible(
+                flex: 1,
+                child: GestureDetector(
+                  child: RiveAnimation.asset(
+                    'assets/anime/wasted.riv',
+                  ),
+                ),
+              ),       
+             Expanded(
+               child: FutureBuilder(
+        future: Future.wait([
+          getWasteItemString('name'),
+        
+          //getWasteItemInt('expiretime'),
+          getWasteItemInt('quantitynum'),
+          getWasteItemString('quantitytype'),
+          getWasteItemString('category'),
+          //getWasteItemInt('boughttime'),
+        ]),
+        builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
+
+          if (!snapshot.hasData)
+            return const Text('Loading...'); // still loading
+          // alternatively use snapshot.connectionState != ConnectionState.done
+          if (snapshot.hasError) return const Text('Something went wrong.');
+          List<String> itemsWaste = snapshot.requireData[0];
+          print('#####################3${snapshot.requireData}##########################');
+          if (itemsWaste.length < 1) {
+            return Center(
+              child: Text("Nothing yet...",
+                style: TextStyle(
+                  fontSize: 20,
+                ),
+              ),
+            );
+          }
+      
+          //List<dynamic> foodItems = getFoodItems(snapshot.requireData);
+
+          //final List<DateTime> expires = List<DateTime>.from(foodItems[1]);
+          List<int> num = snapshot.requireData[1];
+          List<String> type = snapshot.requireData[2];
+          List<String> categoryies = snapshot.requireData[3];
+
+          return ListTileTheme(
+              contentPadding: EdgeInsets.all(15),
+              textColor: Colors.black54,
+              style: ListTileStyle.list,
+              dense: true,
+              child: ListView.builder(
+                
+                  itemCount: itemsWaste.length,
+                  itemBuilder: (context, index) {
+                    var item = itemsWaste[index];
+                    //how to show the quantity tyoe and quantity number?
+
+                    //var expires = getItemExpiringTime();
+                    //how to show the listsby sequence of expire time?
+                    //var remainDays = remainingTime[index].inDays;
+                    //var progressPercentage = remainDays / (expires[index].difference(boughtTime[index]).inDays);
+                    var foodNum = num[index];
+                    var foodType = type[index];
+
+                    var category = categoryies[index];
+
+                    return buildWasteItem(
+                        item,
+                        //remainDays,
+                        foodNum,
+                        foodType,
+                    
+                        category);
+                        //progressPercentage);
+                  }
+              )
+          );
+        }
+    )
+               ),       
             ],
           ),
           Column(
@@ -445,82 +588,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                 ),
             ],
           ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Flexible(
-                flex: 1,
-                child: GestureDetector(
-                  child: RiveAnimation.asset(
-                    'assets/anime/wasted.riv',
-                  ),
-                ),
-              ),
-              Flexible(
-                flex: 1,
-                child: AnimatedTextKit(
-                  animatedTexts: [
-                    TypewriterAnimatedText(
-                      'Oh No! You have wasted "Meat" for 3 times.',
-                      textStyle: const TextStyle(
-                        fontSize: 32.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      speed: const Duration(milliseconds: 100),
-                    ),
-                  ],
-
-                  totalRepeatCount: 4,
-                  pause: const Duration(milliseconds: 100000),
-                  displayFullTextOnTap: true,
-                  stopPauseOnTap: true,
-                ),
-              ),
-              Flexible(
-                flex: 1,
-                child: Column(
-                  children: [
-                    ListTile(
-                      contentPadding:
-                      EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-                      leading: Container(
-                        padding: EdgeInsets.only(right: 12.0),
-                        child: Image(
-                          image: AssetImage("assets/category/meat.png"),
-                          width: 32,
-                          height: 32,
-                        ),
-                      ),
-                      title: Text("Meat", style: TextStyle( fontSize: 25), ),
-                      // subtitle: Text("Expired in $expire days", style: TextStyle(fontStyle: FontStyle.italic),),
-                      trailing: Text("3 Times", style: TextStyle(
-                        fontFamily: 'Roboto',
-                        fontSize: 24,
-                      )),
-                    ),
-                    ListTile(
-                      contentPadding:
-                      EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-                      leading: Container(
-                        padding: EdgeInsets.only(right: 12.0),
-                        child: Image(
-                          image: AssetImage("assets/category/cheese.png"),
-                          width: 32,
-                          height: 32,
-                        ),
-                      ),
-                      title: Text("Butter", style: TextStyle( fontSize: 25), ),
-                      // subtitle: Text("Expired in $expire days", style: TextStyle(fontStyle: FontStyle.italic),),
-                      trailing: Text("1 Times", style: TextStyle(
-                        fontFamily: 'Roboto',
-                        fontSize: 24,
-                      )),
-                    )
-                  ],
-                ),
-              ),
-            ],
-          )
+         
         ],
       ),
 
@@ -534,10 +602,154 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
           pushAddItemScreen();
         },
       ),
-    )
+    );
+    }
+
+
+  Future<List<String>> getWasteItemString(String value) async{
+    List<Map<String, dynamic>> items = await dbhelper.getAllWastedFoodList();
+    print('#################################$items############################');
+    List<String> WasteName = List<String>.generate(items.length, (i) => items[i][value]);
+    return WasteName;
+  }
+
+   Future<List<int>> getWasteItemInt(String value) async{
+    List<Map<String, dynamic>> items = await dbhelper.getAllWastedFoodList();
+    List<int> WasteName = List<int>.generate(items.length, (i) => items[i][value]);
+    return WasteName;
+  }
+
+  Widget buildWasteList() {
+    return FutureBuilder(
+        future: Future.wait([
+          getWasteItemString('name'),
+          //getWasteItemInt('expiretime'),
+          getWasteItemInt('quantitynum'),
+          getWasteItemString('quantitytype'),
+          getWasteItemString('category'),
+          //getWasteItemInt('boughttime'),
+        ]),
+        builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
+          if (!snapshot.hasData)
+            return const Text('Loading...'); // still loading
+          // alternatively use snapshot.connectionState != ConnectionState.done
+          if (snapshot.hasError) return const Text('Something went wrong.');
+          List<String> itemsWaste = snapshot.requireData[0];
+          if (itemsWaste.length < 1) {
+            return Center(
+              child: Text("Nothing yet...",
+                style: TextStyle(
+                  fontSize: 20,
+                ),
+              ),
+            );
+          }
+      
+          //List<dynamic> foodItems = getFoodItems(snapshot.requireData);
+
+          //final List<DateTime> expires = List<DateTime>.from(foodItems[1]);
+          List<int> num = snapshot.requireData[1];
+          List<String> type = snapshot.requireData[2];
+          List<String> categoryies = snapshot.requireData[3];
+          print('###################$Category##############$num#####################3$type#######################$itemsWaste##################');
+
+          return ListTileTheme(
+              contentPadding: EdgeInsets.all(15),
+              textColor: Colors.black54,
+              style: ListTileStyle.list,
+              dense: true,
+              child: ListView.builder(              
+                  itemCount: itemsWaste.length,
+                  itemBuilder: (context, index) {
+                    var item = itemsWaste[index];
+                    //how to show the quantity tyoe and quantity number?
+
+                    //var expires = getItemExpiringTime();
+                    //how to show the listsby sequence of expire time?
+                    //var remainDays = remainingTime[index].inDays;
+                    //var progressPercentage = remainDays / (expires[index].difference(boughtTime[index]).inDays);
+                    var foodNum = num[index];
+                    var foodType = type[index];
+
+                    var category = categoryies[index];
+
+                    return buildWasteItem(
+                        item,
+                        //remainDays,
+                        foodNum,
+                        foodType,
+                        category);
+                        //progressPercentage);
+                  }
+              )
+          );
+        }
     );
   }
 
+  Widget buildWasteItem(String item, int num, String type, String category ) {
+    var categoryIconImagePath = null;
+    var progressColor = null;
+    if(GlobalCateIconMap[category] == null) {
+      categoryIconImagePath = GlobalCateIconMap["Others"];
+    } else {
+      categoryIconImagePath = GlobalCateIconMap[category];
+    };
+    return Container(
+      width: MediaQuery.of(context).size.width,
+      height: MediaQuery.of(context).size.height,
+      padding: const EdgeInsets.all(10.0),
+      child: Column(
+      children:[
+        Flexible(
+                flex: 1,
+                child: AnimatedTextKit(
+                  animatedTexts: [
+                    TypewriterAnimatedText(
+                      'Oh No! You have wasted $num $type $item already...',
+                      textStyle: const TextStyle(
+                        fontSize: 32.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      speed: const Duration(milliseconds: 100),
+                    ),
+                  ],
+                  totalRepeatCount: 4,
+                  pause: const Duration(milliseconds: 100000),
+                  displayFullTextOnTap: true,
+                  stopPauseOnTap: true,
+                ),
+        ),
+      Flexible(
+                flex: 1,
+                child: Column(
+                  children: [
+                    ListTile(
+                      contentPadding:
+                      EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                      leading: Container(
+                        padding: EdgeInsets.only(right: 12.0),
+                        child: Image(
+                          image: AssetImage(categoryIconImagePath),
+                          width: 32,
+                          height: 32,
+                        ),
+                      ),
+                      title: Text(item, style: TextStyle( fontSize: 25), ),
+                      // subtitle: Text("Expired in $expire days", style: TextStyle(fontStyle: FontStyle.italic),),
+                      trailing: Text("$num $type", style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontSize: 24,
+                      )),
+                    ),
+                  ],
+                )
+      ),
+      ]
+    ),
+    );
+  }
+  
 
   Widget buildList() {
     //items = await getItemName();
@@ -664,7 +876,12 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
               onPressed: (BuildContext context) async {
                 await updateFoodState( text, 'wasted');
                 await updateUserValue('negative');
-                items.removeAt(index);
+                //items.removeAt(index);
+                // ignore: list_remove_unrelated_type
+                //items is supposed to be [] right?
+                items.remove(text);
+                //await Provider.of<BottomTopScreen>(context, listen: false).remove(items[0]);
+
                 //print(await getAllItems('foods'));
                 // print('#########${user1[0].primarystate}#############');
 ;              },
@@ -694,7 +911,8 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                 await updateFoodState( text, 'consumed');
                 await updateUserValue('positive');
                 //print(await getAllItems('foods'));
-                items.removeAt(index);
+                //items.removeAt(0);
+                items.remove(text);
                 //buildList();
               },
               backgroundColor: progressColor,
@@ -737,7 +955,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
                 flex: 4,
                 child: Padding(
                     padding: EdgeInsets.only(left: 10.0),
-                    child: Text("$expire left",
+                    child: Text("$expire Days Left",
                         style: TextStyle(color: expire>3?Colors.orange:Colors.black))),
               )
             ],
@@ -831,6 +1049,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> {
               },
             ));
   }
+
   Widget getTextWidgets(List<String> strings)
   {
     return new Row(children: strings.map((item) => new Text(item)).toList());

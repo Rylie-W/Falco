@@ -343,7 +343,7 @@ class DBHelper{
     Database dbHelper = await db; 
     //Query table for all the foods.
    
-    final List<Map<String, dynamic>> maps = await dbHelper.query('foods', columns: [value], where: 'state = ?', whereArgs: [state]);
+    List<Map<String, dynamic>> maps = await dbHelper.query('foods', columns: [value], where: 'state = ?', whereArgs: [state]);
 
     //Convert the List<Map<String, dynamic> into a List<String>
     var foodstring = List<String>.generate(maps.length, (i) => maps[i][value]);
@@ -356,7 +356,8 @@ class DBHelper{
     Database dbHelper = await db;
     //Query table for all the foods.
 
-    final List<Map<String, dynamic>> maps = await dbHelper.query('foods' , where: 'consumestate > 1');
+    List<Map<String, dynamic>> maps = await dbHelper.query('foods' , where: 'state = ?', whereArgs: ['wasted']);
+    print('########################3$maps########################');
 
     return maps;
 

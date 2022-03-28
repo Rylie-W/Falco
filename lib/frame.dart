@@ -53,6 +53,8 @@ class _FrameState extends State<Frame> {
       if(expiretime < timeNow){
         if(foodState == 'good' || foodState == 'expiring')
         await dbhelper.updateFoodWaste(foodName);
+        //update uservalue negative
+        
         String category = await dbhelper.getOneFoodValue(foodName, 'category');
         showExpiredDialog(foodName, category);
         print('###########################$foodName is wasted###########################');
