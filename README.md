@@ -1,16 +1,35 @@
-# less_waste
+# FALCO
 
-A new Flutter project.
+This is the source code of our **Falco** project in 2022 Google Solution Challenge.
+
+Falco is an application using gaming mechanism to help users build good consumption habits and reduce food waste. It’s built with **Flutter** which combines fun and convenience and presents animations with **Rive**.
+
+We also offer shopping receipts scanning function, which is realized by integrating Google Cloud Vision API with the backend service deployed on Google Cloud Platform. The backend code can be found at [Falco-Server](https://github.com/Rylie-W/falco-server).
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+We only developed Android version for now. You can directly download the APK at the root directory, also see the link [here](https://github.com/Rylie-W/Falco/blob/prototype/base.apk).
 
-A few resources to get you started if this is your first Flutter project:
+You can also run this app locally by the following steps:
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
++ ### Requirements(versions only for suggestion)
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+  + Flutter (Channel stable, 2.8.1, on Microsoft Windows [Version 10.0.19044.1586])
+  + Android toolchain - develop for Android devices (Android SDK version 32.1.0-rc1)
+  + Android Studio (version 2021.1)
+  + Connected Android Device/ Emulator in Android Studio 
+
++ ### Download project:
+
+  ```shell
+  git clone https://github.com/Rylie-W/Falco.git  
+  cd less_waste
+  ```
+
++ ### To compile the APK:
+
+  ```shell
+  flutter run --no-sound-null-safety
+  ```
+
++ ### You will see the APK is compiled and installed on your Emulator or Android device.
