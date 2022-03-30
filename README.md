@@ -8,7 +8,7 @@ We also offer shopping receipts scanning function, which is realized by integrat
 
 ## Getting Started
 
-We only developed Android version for now. You can directly download the APK at the root directory, also see the link [here](https://github.com/Rylie-W/Falco/blob/prototype/base.apk).
+We only developed Android version for now. You can directly download the APK at the root directory, also see the link [here](https://github.com/Rylie-W/Falco/releases/download/apk/base.apk).
 
 You can also run this app locally by the following steps:
 

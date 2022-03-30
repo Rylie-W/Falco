@@ -230,7 +230,7 @@ class _HomePageState extends State<HomePage> {
             new Center(
               child: GestureDetector(
                 child: RiveAnimation.asset(
-                  'assets/anime/breath.riv',
+                  'assets/anime/chid-breath.riv',
                 ),
               ),
             ),
