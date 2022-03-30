@@ -54,7 +54,7 @@ class _FrameState extends State<Frame> {
         if(foodState == 'good' || foodState == 'expiring')
         await dbhelper.updateFoodWaste(foodName);
         //update uservalue negative
-        
+
         String category = await dbhelper.getOneFoodValue(foodName, 'category');
         showExpiredDialog(foodName, category);
         print('###########################$foodName is wasted###########################');
@@ -169,7 +169,7 @@ class _FrameState extends State<Frame> {
         category: 'Milk Product',
         boughttime: timeNow,
         expiretime: 1649969762604,
-        quantitytype: 'pieces',
+        quantitytype: 'piece',
         quantitynum: 3,
         consumestate: 0.50,
         state: 'good');
@@ -179,7 +179,7 @@ class _FrameState extends State<Frame> {
         category: 'Egg',
         boughttime: timeNow,
         expiretime: 1697969762604,
-        quantitytype: 'number',
+        quantitytype: 'num',
         quantitynum: 4,
         consumestate: 0,
         state: 'good');

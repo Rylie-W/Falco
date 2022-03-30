@@ -1063,7 +1063,7 @@ class _BottomTopScreenState extends State<BottomTopScreen> with TickerProviderSt
 
     final category = ["Vegetable", "Meat", "Fruit", "Milk Product", "Milk", "Sea Food", "Egg", "Others"];
     List<Widget> categortyList = new List<Widget>.generate(8, (index) => new Text(category[index]));
-    final quanTypes = ["Gram", "Kilogram", "Piece", "Bag", "Bottle", "Number"];
+    final quanTypes = ["g", "kg", "piece", "bag", "bottle", "num"];
     List<Widget> quanTypeList = new List<Widget>.generate(6, (index) => new Text(quanTypes[index]));
     final nums = List.generate(10, (index) => index);
     List<Widget> numList = List.generate(10, (index) => new Text("$index"));
